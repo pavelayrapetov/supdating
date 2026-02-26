@@ -7,7 +7,6 @@ export default defineConfig({
   base: '/',
   build: {
     rollupOptions: {
-      external: ['@twa-dev/sdk']
     }
   }
 })
