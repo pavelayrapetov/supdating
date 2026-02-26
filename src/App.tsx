@@ -17,7 +17,7 @@ function App() {
       minHeight: '100vh',
       color: '#333'
     }}>
-      <h1 style={{ color: '#0088cc' }}>Привет из Mini App! 🚀</h1>
+      <h1 style={{ color: 'red' }}>Тест 27 февраля - новая версия</h1>
 
       {user ? (
         <>
