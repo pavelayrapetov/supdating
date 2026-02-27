@@ -1,9 +1,27 @@
 import { useEffect, useState } from 'react';
 
+interface User {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+  is_premium?: boolean;
+  photo_url?: string;
+  // другие поля Telegram, если нужны
+}
+
+interface Profile {
+  age: number;
+  gender: string;
+  about: string;
+  createdAt: string;
+}
+
 function App() {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [screen, setScreen] = useState('loading');
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [screen, setScreen] = useState<'loading' | 'profile' | 'search'>('loading');
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
@@ -12,28 +30,28 @@ function App() {
       tg.expand();
 
       // Получаем пользователя из Telegram
-      const initUser = tg.initDataUnsafe?.user;
+      const initUser = tg.initDataUnsafe?.user as User | undefined;
       if (initUser) {
         setUser(initUser);
       }
 
-      // Проверяем, есть ли уже анкета в localStorage
-      const saved = localStorage.getItem('sup_dating_profile');
-      if (saved) {
-        setProfile(JSON.parse(saved));
-        setScreen('search'); // сразу на поиск, если анкета есть
+      // Проверяем сохранённую анкету
+      const savedProfile = localStorage.getItem('sup_dating_profile');
+      if (savedProfile) {
+        const parsed = JSON.parse(savedProfile) as Profile;
+        setProfile(parsed);
+        setScreen('search');
       } else {
-        setScreen('profile'); // первый раз — на анкету
+        setScreen('profile');
       }
     } else {
-      // если не в Telegram — показываем заглушку
       setScreen('profile');
     }
   }, []);
 
-  // Сохранение анкеты (заглушка, потом подключишь форму)
+  // Сохранение анкеты (заглушка — потом подключишь реальную форму)
   const saveProfile = () => {
-    const newProfile = {
+    const newProfile: Profile = {
       age: 25,
       gender: 'male',
       about: 'Люблю путешествия и кофе ☕',
@@ -47,7 +65,15 @@ function App() {
 
   if (screen === 'loading') {
     return (
-      <div style={{ height: '100vh', background: '#0f0f1a', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{
+        height: '100vh',
+        background: '#0f0f1a',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.5rem',
+      }}>
         Загрузка...
       </div>
     );
@@ -110,7 +136,7 @@ function App() {
     );
   }
 
-  // Экран поиска (если анкета уже заполнена)
+  // Экран поиска пары
   if (screen === 'search') {
     return (
       <div style={{
@@ -147,7 +173,7 @@ function App() {
 
         {profile && (
           <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
-            Твоя анкета сохранена: {profile.gender === 'male' ? 'Мужчина' : 'Женщина'}, {profile.age} лет
+            Твоя анкета: {profile.gender === 'male' ? 'Мужчина' : 'Женщина'}, {profile.age} лет
           </p>
         )}
       </div>
