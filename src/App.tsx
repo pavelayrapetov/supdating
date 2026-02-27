@@ -8,12 +8,11 @@ interface User {
   language_code?: string;
   is_premium?: boolean;
   photo_url?: string;
-  // другие поля Telegram, если нужны
 }
 
 interface Profile {
   age: number;
-  gender: string;
+  gender: 'male' | 'female' | 'other';
   about: string;
   createdAt: string;
 }
@@ -23,40 +22,62 @@ function App() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [screen, setScreen] = useState<'loading' | 'profile' | 'search'>('loading');
 
+  // Форма анкеты (локальное состояние)
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
+  const [about, setAbout] = useState('');
+
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
 
-      // Получаем пользователя из Telegram
+      // Получаем данные пользователя
       const initUser = tg.initDataUnsafe?.user as User | undefined;
       if (initUser) {
         setUser(initUser);
       }
 
       // Проверяем сохранённую анкету
-      const savedProfile = localStorage.getItem('sup_dating_profile');
-      if (savedProfile) {
-        const parsed = JSON.parse(savedProfile) as Profile;
-        setProfile(parsed);
-        setScreen('search');
+      const saved = localStorage.getItem('sup_dating_profile');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved) as Profile;
+          setProfile(parsed);
+          setScreen('search');
+        } catch (e) {
+          console.error('Ошибка парсинга анкеты:', e);
+          setScreen('profile');
+        }
       } else {
         setScreen('profile');
       }
     } else {
+      // Не в Telegram — показываем анкету
       setScreen('profile');
     }
   }, []);
 
-  // Сохранение анкеты (заглушка — потом подключишь реальную форму)
-  const saveProfile = () => {
+  const handleSaveProfile = () => {
+    if (!age || !gender) {
+      alert('Заполните возраст и пол!');
+      return;
+    }
+
+    const ageNum = parseInt(age, 10);
+    if (isNaN(ageNum) || ageNum < 18) {
+      alert('Возраст должен быть числом от 18 лет!');
+      return;
+    }
+
     const newProfile: Profile = {
-      age: 25,
-      gender: 'male',
-      about: 'Люблю путешествия и кофе ☕',
+      age: ageNum,
+      gender,
+      about: about.trim(),
       createdAt: new Date().toISOString(),
     };
+
     localStorage.setItem('sup_dating_profile', JSON.stringify(newProfile));
     setProfile(newProfile);
     setScreen('search');
@@ -65,70 +86,109 @@ function App() {
 
   if (screen === 'loading') {
     return (
-      <div style={{
-        height: '100vh',
-        background: '#0f0f1a',
-        color: 'white',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1.5rem',
-      }}>
+      <div
+        style={{
+          height: '100vh',
+          background: '#0f0f1a',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '1.5rem',
+        }}
+      >
         Загрузка...
       </div>
     );
   }
 
-  // Экран анкеты (первый раз)
   if (screen === 'profile') {
     return (
-      <div style={{
-        minHeight: '100vh',
-        padding: '40px 20px',
-        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-        color: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          padding: '40px 20px',
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          color: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
         <h1 style={{ fontSize: '2.8rem', marginBottom: '30px' }}>Создай анкету</h1>
 
         <input
           type="number"
           placeholder="Возраст"
-          style={{ padding: '15px', margin: '10px', width: '80%', borderRadius: '12px', border: 'none', fontSize: '1.2rem' }}
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
+          style={{
+            padding: '15px',
+            margin: '10px',
+            width: '80%',
+            maxWidth: '400px',
+            borderRadius: '12px',
+            border: 'none',
+            fontSize: '1.2rem',
+          }}
         />
+
         <select
-          style={{ padding: '15px', margin: '10px', width: '80%', borderRadius: '12px', border: 'none', fontSize: '1.2rem' }}
+          value={gender}
+          onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other' | '')}
+          style={{
+            padding: '15px',
+            margin: '10px',
+            width: '80%',
+            maxWidth: '400px',
+            borderRadius: '12px',
+            border: 'none',
+            fontSize: '1.2rem',
+          }}
         >
-          <option value="">Пол</option>
+          <option value="">Выберите пол</option>
           <option value="male">Мужчина</option>
           <option value="female">Женщина</option>
           <option value="other">Другое</option>
         </select>
+
         <textarea
-          placeholder="Расскажи о себе..."
-          style={{ padding: '15px', margin: '10px', width: '80%', height: '120px', borderRadius: '12px', border: 'none', fontSize: '1.2rem' }}
+          placeholder="Расскажи о себе (что ищешь, интересы, возраст партнёра и т.д.)"
+          value={about}
+          onChange={(e) => setAbout(e.target.value)}
+          style={{
+            padding: '15px',
+            margin: '10px',
+            width: '80%',
+            maxWidth: '400px',
+            height: '140px',
+            borderRadius: '12px',
+            border: 'none',
+            fontSize: '1.2rem',
+            resize: 'vertical',
+          }}
         />
 
         <button
-          onClick={saveProfile}
+          onClick={handleSaveProfile}
           style={{
             marginTop: '30px',
             padding: '18px 60px',
             fontSize: '1.5rem',
+            fontWeight: 'bold',
             background: 'linear-gradient(90deg, #ff6b6b, #ff8e53)',
             color: 'white',
             border: 'none',
             borderRadius: '50px',
             cursor: 'pointer',
+            boxShadow: '0 8px 25px rgba(255,107,107,0.4)',
           }}
         >
           Сохранить и начать поиск
         </button>
 
         {user && (
-          <p style={{ marginTop: '20px', fontSize: '1.2rem' }}>
+          <p style={{ marginTop: '25px', fontSize: '1.3rem' }}>
             Привет, {user.first_name}!
           </p>
         )}
@@ -136,36 +196,41 @@ function App() {
     );
   }
 
-  // Экран поиска пары
+  // Экран поиска (для тех, у кого анкета уже есть)
   if (screen === 'search') {
     return (
-      <div style={{
-        minHeight: '100vh',
-        padding: '40px 20px',
-        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-        color: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        textAlign: 'center',
-      }}>
-        <h1 style={{ fontSize: '3rem', marginBottom: '30px' }}>Поиск пары</h1>
-        <p style={{ fontSize: '1.6rem', marginBottom: '40px' }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          padding: '40px 20px',
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          color: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+        }}
+      >
+        <h1 style={{ fontSize: '3.2rem', marginBottom: '30px' }}>Поиск пары</h1>
+
+        <p style={{ fontSize: '1.6rem', marginBottom: '40px', opacity: 0.9 }}>
           Ищем для тебя идеальную пару...
         </p>
-        <div style={{ fontSize: '2.5rem', margin: '40px 0' }}>
-          🔥 3 человека рядом
-        </div>
+
+        <div style={{ fontSize: '3rem', margin: '40px 0' }}>🔥</div>
+        <p style={{ fontSize: '2rem', marginBottom: '60px' }}>Найдено 3 человека рядом</p>
+
         <button
-          onClick={() => alert('Скоро здесь будут реальные анкеты! 💘')}
+          onClick={() => alert('Скоро здесь будут реальные анкеты с фото и описанием 💘')}
           style={{
-            padding: '18px 50px',
+            padding: '18px 60px',
             fontSize: '1.5rem',
             background: '#ff6b6b',
             color: 'white',
             border: 'none',
             borderRadius: '50px',
             cursor: 'pointer',
+            boxShadow: '0 8px 25px rgba(255,107,107,0.4)',
           }}
         >
           Показать анкеты
@@ -173,7 +238,13 @@ function App() {
 
         {profile && (
           <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
-            Твоя анкета: {profile.gender === 'male' ? 'Мужчина' : 'Женщина'}, {profile.age} лет
+            Твоя анкета сохранена: {profile.gender === 'male' ? 'Мужчина' : 'Женщина'}, {profile.age} лет
+          </p>
+        )}
+
+        {user && (
+          <p style={{ marginTop: '20px', fontSize: '1.2rem' }}>
+            Привет, {user.first_name}!
           </p>
         )}
       </div>
