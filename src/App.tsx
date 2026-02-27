@@ -22,7 +22,7 @@ function App() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [screen, setScreen] = useState<'loading' | 'profile' | 'search'>('loading');
 
-  // Форма анкеты (локальное состояние)
+  // Состояние формы анкеты
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [about, setAbout] = useState('');
@@ -33,28 +33,31 @@ function App() {
       tg.ready();
       tg.expand();
 
-      // Получаем данные пользователя
+      // Получаем пользователя
       const initUser = tg.initDataUnsafe?.user as User | undefined;
       if (initUser) {
         setUser(initUser);
       }
 
-      // Проверяем сохранённую анкету
+      // Загружаем сохранённую анкету
       const saved = localStorage.getItem('sup_dating_profile');
       if (saved) {
         try {
           const parsed = JSON.parse(saved) as Profile;
           setProfile(parsed);
+          // Заполняем форму сохранёнными данными
+          setAge(parsed.age.toString());
+          setGender(parsed.gender);
+          setAbout(parsed.about);
           setScreen('search');
         } catch (e) {
-          console.error('Ошибка парсинга анкеты:', e);
+          console.error('Ошибка загрузки анкеты:', e);
           setScreen('profile');
         }
       } else {
         setScreen('profile');
       }
     } else {
-      // Не в Telegram — показываем анкету
       setScreen('profile');
     }
   }, []);
@@ -153,7 +156,7 @@ function App() {
         </select>
 
         <textarea
-          placeholder="Расскажи о себе (что ищешь, интересы, возраст партнёра и т.д.)"
+          placeholder="Расскажи о себе..."
           value={about}
           onChange={(e) => setAbout(e.target.value)}
           style={{
@@ -196,7 +199,6 @@ function App() {
     );
   }
 
-  // Экран поиска (для тех, у кого анкета уже есть)
   if (screen === 'search') {
     return (
       <div
@@ -225,6 +227,7 @@ function App() {
           style={{
             padding: '18px 60px',
             fontSize: '1.5rem',
+            fontWeight: 'bold',
             background: '#ff6b6b',
             color: 'white',
             border: 'none',
@@ -237,13 +240,13 @@ function App() {
         </button>
 
         {profile && (
-          <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
-            Твоя анкета сохранена: {profile.gender === 'male' ? 'Мужчина' : 'Женщина'}, {profile.age} лет
+          <p style={{ marginTop: '40px', fontSize: '1.3rem', opacity: 0.9 }}>
+            Твоя анкета: {profile.gender === 'male' ? 'Мужчина' : profile.gender === 'female' ? 'Женщина' : 'Другое'}, {profile.age} лет
           </p>
         )}
 
         {user && (
-          <p style={{ marginTop: '20px', fontSize: '1.2rem' }}>
+          <p style={{ marginTop: '20px', fontSize: '1.3rem' }}>
             Привет, {user.first_name}!
           </p>
         )}
