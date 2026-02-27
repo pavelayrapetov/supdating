@@ -11,13 +11,13 @@ function App() {
       tg.ready();
       tg.expand();
 
-      // Получаем пользователя из Telegram
+      // Получаем пользователя
       const initUser = tg.initDataUnsafe?.user;
       if (initUser) {
         setUser(initUser);
       }
 
-      // Главная кнопка Telegram внизу экрана
+      // Главная кнопка Telegram
       tg.MainButton.setText('Продолжить');
       tg.MainButton.setParams({
         color: '#00ff88',
@@ -34,24 +34,22 @@ function App() {
         }
       });
 
-      // Проверяем, есть ли уже сохранённая анкета
+      // Проверяем сохранённую анкету
       const savedProfile = localStorage.getItem('sup_dating_profile');
       if (savedProfile) {
         const parsed = JSON.parse(savedProfile);
         setProfile(parsed);
-        setScreen('search'); // Если анкета есть — сразу на поиск
+        setScreen('search');
       } else {
-        setScreen('home'); // Первый раз — главный экран
+        setScreen('home');
       }
     } else {
-      // Если не в Telegram — показываем заглушку
-      console.warn('Это не Telegram Mini App');
       setScreen('home');
     }
   }, [screen]);
 
-  // Сохранение анкеты (пока заглушка — потом заменишь на форму)
   const saveProfile = () => {
+    // Пока заглушка — потом заменишь на реальные данные формы
     const newProfile = {
       age: 25,
       gender: 'male',
@@ -131,13 +129,6 @@ function App() {
         <p style={{ fontSize: '1.2rem', opacity: 0.8, marginBottom: '60px' }}>
           Нажми главную кнопку внизу экрана, чтобы создать анкету
         </p>
-
-        {/* Используем profile, чтобы TS не ругался */}
-        {profile && (
-          <p style={{ fontSize: '1.1rem', opacity: 0.7, marginTop: '20px' }}>
-            Твоя анкета готова (возраст: {profile.age || '?'})
-          </p>
-        )}
       </div>
     );
   }
