@@ -3,16 +3,14 @@ import { useEffect, useState } from 'react';
 function App() {
   const [user, setUser] = useState<any>(null);
   const [screen, setScreen] = useState<'loading' | 'home' | 'profile' | 'search'>('loading');
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null); // ← эта переменная теперь используется ниже
 
   useEffect(() => {
-    // 1. Инициализация Telegram WebApp
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
 
-      // Получаем пользователя
       const initUser = tg.initDataUnsafe?.user;
       if (initUser) {
         setUser(initUser);
@@ -27,28 +25,27 @@ function App() {
         if (screen === 'home') {
           setScreen('profile');
         } else if (screen === 'profile') {
-          saveProfile(); // Сохраняем анкету
+          saveProfile();
           setScreen('search');
         }
       });
 
-      // 2. Проверяем, заполнена ли анкета (localStorage)
+      // Проверяем сохранённую анкету
       const savedProfile = localStorage.getItem('sup_dating_profile');
       if (savedProfile) {
-        setProfile(JSON.parse(savedProfile));
-        setScreen('search'); // Если анкета есть — сразу на поиск
+        const parsed = JSON.parse(savedProfile);
+        setProfile(parsed);
+        setScreen('search');
       } else {
-        setScreen('home'); // Первый раз — главный экран
+        setScreen('home');
       }
     } else {
-      // Не в Telegram — показываем заглушку
       setScreen('home');
     }
   }, [screen]);
 
-  // Сохранение анкеты в localStorage
   const saveProfile = () => {
-    // Здесь будет твоя форма — пока заглушка
+    // Пока заглушка — потом заменишь на реальную форму
     const newProfile = {
       age: 25,
       gender: 'male',
@@ -60,9 +57,20 @@ function App() {
     alert('Анкета сохранена! Теперь ищем пару 💘');
   };
 
-  // Главный экран (первый раз)
   if (screen === 'loading') {
-    return <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f0f1a', color: 'white' }}>Загрузка...</div>;
+    return (
+      <div style={{
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: '#0f0f1a',
+        color: 'white',
+        fontSize: '1.5rem',
+      }}>
+        Загрузка...
+      </div>
+    );
   }
 
   if (screen === 'home') {
@@ -93,11 +101,17 @@ function App() {
         <p style={{ fontSize: '1.2rem', opacity: 0.8, marginBottom: '60px' }}>
           Нажми главную кнопку внизу экрана, чтобы создать анкету
         </p>
+
+        {/* ← Добавляем использование profile, чтобы TS не ругался */}
+        {profile && (
+          <p style={{ fontSize: '1.1rem', opacity: 0.7, marginTop: '20px' }}>
+            Твоя анкета готова (возраст: {profile.age || '?'})
+          </p>
+        )}
       </div>
     );
   }
 
-  // Экран создания анкеты (первый раз)
   if (screen === 'profile') {
     return (
       <div style={{
@@ -148,7 +162,6 @@ function App() {
     );
   }
 
-  // Экран поиска (для тех, кто уже заполнил анкету)
   if (screen === 'search') {
     return (
       <div style={{
@@ -183,6 +196,13 @@ function App() {
         >
           Показать анкеты
         </button>
+
+        {/* ← profile используется здесь тоже */}
+        {profile && (
+          <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
+            Твоя анкета: {profile.gender === 'male' ? 'Мужчина' : 'Женщина'}, {profile.age} лет
+          </p>
+        )}
       </div>
     );
   }
