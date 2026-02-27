@@ -12,14 +12,17 @@ interface TelegramWebAppUser {
 
 interface TelegramWebAppInitDataUnsafe {
   user?: TelegramWebAppUser;
-  // другие поля, если нужно
 }
 
 interface TelegramWebApp {
   ready: () => void;
   expand: () => void;
   initDataUnsafe: TelegramWebAppInitDataUnsafe;
-  // добавь другие методы, если будешь использовать (MainButton, BackButton и т.д.)
+  MainButton: {
+    setText: (text: string) => void;
+    show: () => void;
+    hide: () => void;
+  };
 }
 
 interface Window {
