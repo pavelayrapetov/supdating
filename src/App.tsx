@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 function App() {
   const [user, setUser] = useState<any>(null);
   const [screen, setScreen] = useState<'loading' | 'home' | 'profile' | 'search'>('loading');
-  const [profile, setProfile] = useState<any>(null); // ← эта переменная теперь используется ниже
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
@@ -11,14 +11,18 @@ function App() {
       tg.ready();
       tg.expand();
 
+      // Получаем пользователя из Telegram
       const initUser = tg.initDataUnsafe?.user;
       if (initUser) {
         setUser(initUser);
       }
 
-      // Главная кнопка Telegram
+      // Главная кнопка Telegram внизу экрана
       tg.MainButton.setText('Продолжить');
-      tg.MainButton.setParams({ color: '#00ff88', text_color: '#000000' });
+      tg.MainButton.setParams({
+        color: '#00ff88',
+        text_color: '#000000',
+      });
       tg.MainButton.show();
 
       tg.MainButton.onClick(() => {
@@ -30,22 +34,24 @@ function App() {
         }
       });
 
-      // Проверяем сохранённую анкету
+      // Проверяем, есть ли уже сохранённая анкета
       const savedProfile = localStorage.getItem('sup_dating_profile');
       if (savedProfile) {
         const parsed = JSON.parse(savedProfile);
         setProfile(parsed);
-        setScreen('search');
+        setScreen('search'); // Если анкета есть — сразу на поиск
       } else {
-        setScreen('home');
+        setScreen('home'); // Первый раз — главный экран
       }
     } else {
+      // Если не в Telegram — показываем заглушку
+      console.warn('Это не Telegram Mini App');
       setScreen('home');
     }
   }, [screen]);
 
+  // Сохранение анкеты (пока заглушка — потом заменишь на форму)
   const saveProfile = () => {
-    // Пока заглушка — потом заменишь на реальную форму
     const newProfile = {
       age: 25,
       gender: 'male',
@@ -80,18 +86,42 @@ function App() {
         padding: '40px 20px',
         background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
         color: 'white',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         textAlign: 'center',
       }}>
-        <h1 style={{ fontSize: '3.5rem', margin: '0 0 20px 0' }}>SUP dating</h1>
-        <p style={{ fontSize: '1.6rem', margin: '0 0 40px 0' }}>Найди свою вторую половинку прямо в Telegram</p>
+        <h1 style={{
+          fontSize: '3.5rem',
+          margin: '0 0 20px 0',
+          textShadow: '0 4px 12px rgba(0,0,0,0.4)',
+        }}>
+          SUP dating
+        </h1>
+
+        <p style={{ fontSize: '1.6rem', margin: '0 0 40px 0', opacity: 0.9 }}>
+          Найди свою вторую половинку прямо в Telegram
+        </p>
 
         {user ? (
-          <p style={{ fontSize: '2rem', marginBottom: '40px' }}>
-            Привет, <strong>{user.first_name}!</strong> 👋
-          </p>
+          <div style={{
+            background: 'rgba(255,255,255,0.15)',
+            padding: '20px',
+            borderRadius: '16px',
+            marginBottom: '40px',
+            width: '90%',
+            maxWidth: '400px',
+          }}>
+            <p style={{ fontSize: '2rem', margin: '0 0 10px 0' }}>
+              Привет, <strong>{user.first_name} {user.last_name || ''}!</strong> 👋
+            </p>
+            {user.username && (
+              <p style={{ fontSize: '1.4rem', opacity: 0.9 }}>
+                @{user.username}
+              </p>
+            )}
+          </div>
         ) : (
           <p style={{ fontSize: '1.6rem', marginBottom: '40px' }}>
             Нажми кнопку ниже, чтобы начать
@@ -102,7 +132,7 @@ function App() {
           Нажми главную кнопку внизу экрана, чтобы создать анкету
         </p>
 
-        {/* ← Добавляем использование profile, чтобы TS не ругался */}
+        {/* Используем profile, чтобы TS не ругался */}
         {profile && (
           <p style={{ fontSize: '1.1rem', opacity: 0.7, marginTop: '20px' }}>
             Твоя анкета готова (возраст: {profile.age || '?'})
@@ -197,7 +227,6 @@ function App() {
           Показать анкеты
         </button>
 
-        {/* ← profile используется здесь тоже */}
         {profile && (
           <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
             Твоя анкета: {profile.gender === 'male' ? 'Мужчина' : 'Женщина'}, {profile.age} лет
