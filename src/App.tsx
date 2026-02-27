@@ -2,58 +2,34 @@ import { useEffect, useState } from 'react';
 
 function App() {
   const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Даём Telegram понять, что приложение готово
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
 
-      // Пытаемся получить данные пользователя
+      // Получаем пользователя
       const initUser = tg.initDataUnsafe?.user;
       if (initUser) {
         setUser(initUser);
       }
 
-      // Показываем основную кнопку Telegram (внизу экрана)
+      // Главная кнопка Telegram внизу экрана
       tg.MainButton.setText('Запустить знакомства 🔥');
       tg.MainButton.setParams({
         color: '#00ff88',
-        text_color: '#000000',
+        text_color: '#000000'
       });
       tg.MainButton.show();
 
       tg.MainButton.onClick(() => {
         alert(`Привет, ${user?.first_name || 'путешественник'}!\n\nПоиск пары запущен! 💘`);
       });
-
-      setLoading(false);
     } else {
-      // Если не Telegram — показываем сообщение
       console.warn('Это не Telegram Mini App');
-      setLoading(false);
     }
   }, [user]);
-
-  if (loading) {
-    return (
-      <div
-        style={{
-          height: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: '#0f0f1a',
-          color: 'white',
-          fontSize: '1.5rem',
-        }}
-      >
-        Загрузка...
-      </div>
-    );
-  }
 
   return (
     <div
@@ -71,7 +47,7 @@ function App() {
     >
       <h1
         style={{
-          fontSize: '3.2rem',
+          fontSize: '3.5rem',
           margin: '0 0 20px 0',
           textShadow: '0 4px 12px rgba(0,0,0,0.4)',
         }}
@@ -79,7 +55,7 @@ function App() {
         SUP dating
       </h1>
 
-      <p style={{ fontSize: '1.4rem', margin: '0 0 40px 0', opacity: 0.9 }}>
+      <p style={{ fontSize: '1.6rem', margin: '0 0 40px 0', opacity: 0.9 }}>
         Найди свою вторую половинку прямо в Telegram
       </p>
 
@@ -96,11 +72,11 @@ function App() {
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
           }}
         >
-          <p style={{ fontSize: '2rem', margin: '0 0 10px 0' }}>
+          <p style={{ fontSize: '2.2rem', margin: '0 0 10px 0' }}>
             Привет, <strong>{user.first_name} {user.last_name || ''}!</strong> 👋
           </p>
           {user.username && (
-            <p style={{ fontSize: '1.4rem', opacity: 0.9 }}>
+            <p style={{ fontSize: '1.5rem', opacity: 0.9 }}>
               @{user.username}
             </p>
           )}
@@ -116,10 +92,10 @@ function App() {
             maxWidth: '400px',
           }}
         >
-          <p style={{ fontSize: '1.6rem', margin: '0 0 15px 0' }}>
-            Привет, путешественник!
+          <p style={{ fontSize: '1.8rem', margin: '0 0 15px 0' }}>
+            Привет!
           </p>
-          <p style={{ fontSize: '1.2rem', opacity: 0.85 }}>
+          <p style={{ fontSize: '1.3rem', opacity: 0.85 }}>
             Нажми кнопку ниже, чтобы начать
           </p>
         </div>
