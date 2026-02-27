@@ -1,91 +1,161 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 function App() {
-  useEffect(() => {
-    // Инициализация Telegram Mini App
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
-      // Опционально: показываем MainButton, если нужно
-      window.Telegram.WebApp.MainButton.setText('Готово!');
-      window.Telegram.WebApp.MainButton.show();
-    } else {
-      console.warn('Telegram WebApp не найден — это не Telegram Mini App');
-    }
-  }, []);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Получаем данные пользователя безопасно
-  const user = window.Telegram?.WebApp?.initDataUnsafe?.user;
+  useEffect(() => {
+    // Даём Telegram понять, что приложение готово
+    if (window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.ready();
+      tg.expand();
+
+      // Пытаемся получить данные пользователя
+      const initUser = tg.initDataUnsafe?.user;
+      if (initUser) {
+        setUser(initUser);
+      }
+
+      // Показываем основную кнопку Telegram (внизу экрана)
+      tg.MainButton.setText('Запустить знакомства 🔥');
+      tg.MainButton.setParams({
+        color: '#00ff88',
+        text_color: '#000000',
+      });
+      tg.MainButton.show();
+
+      tg.MainButton.onClick(() => {
+        alert(`Привет, ${user?.first_name || 'путешественник'}!\n\nПоиск пары запущен! 💘`);
+      });
+
+      setLoading(false);
+    } else {
+      // Если не Telegram — показываем сообщение
+      console.warn('Это не Telegram Mini App');
+      setLoading(false);
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: '#0f0f1a',
+          color: 'white',
+          fontSize: '1.5rem',
+        }}
+      >
+        Загрузка...
+      </div>
+    );
+  }
 
   return (
     <div
       style={{
-        height: '100vh',
-        padding: '30px',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        minHeight: '100vh',
+        padding: '40px 20px',
+        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
         color: 'white',
         fontFamily: 'system-ui, -apple-system, sans-serif',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
         textAlign: 'center',
       }}
     >
-      <h1 style={{ fontSize: '3.5rem', margin: '0 0 20px 0', textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+      <h1
+        style={{
+          fontSize: '3.2rem',
+          margin: '0 0 20px 0',
+          textShadow: '0 4px 12px rgba(0,0,0,0.4)',
+        }}
+      >
         SUP dating
       </h1>
 
-      <p style={{ fontSize: '1.6rem', margin: '0 0 40px 0', opacity: 0.9 }}>
-        Твоё первое Telegram Mini App
+      <p style={{ fontSize: '1.4rem', margin: '0 0 40px 0', opacity: 0.9 }}>
+        Найди свою вторую половинку прямо в Telegram
       </p>
 
       {user ? (
-        <div style={{ marginBottom: '40px', background: 'rgba(255,255,255,0.15)', padding: '20px', borderRadius: '16px', backdropFilter: 'blur(10px)' }}>
-          <p style={{ fontSize: '1.4rem', margin: '10px 0' }}>
-            Привет, <strong>{user.first_name} {user.last_name || ''}</strong>!
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.15)',
+            padding: '25px',
+            borderRadius: '20px',
+            marginBottom: '40px',
+            width: '90%',
+            maxWidth: '400px',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          }}
+        >
+          <p style={{ fontSize: '2rem', margin: '0 0 10px 0' }}>
+            Привет, <strong>{user.first_name} {user.last_name || ''}!</strong> 👋
           </p>
           {user.username && (
-            <p style={{ fontSize: '1.3rem', margin: '10px 0' }}>
+            <p style={{ fontSize: '1.4rem', opacity: 0.9 }}>
               @{user.username}
             </p>
           )}
         </div>
       ) : (
-        <p style={{ fontSize: '1.4rem', marginBottom: '40px', opacity: 0.8 }}>
-          Открой через кнопку в боте, чтобы увидеть свои данные
-        </p>
+        <div
+          style={{
+            background: 'rgba(255,255,255,0.1)',
+            padding: '25px',
+            borderRadius: '20px',
+            marginBottom: '40px',
+            width: '90%',
+            maxWidth: '400px',
+          }}
+        >
+          <p style={{ fontSize: '1.6rem', margin: '0 0 15px 0' }}>
+            Привет, путешественник!
+          </p>
+          <p style={{ fontSize: '1.2rem', opacity: 0.85 }}>
+            Нажми кнопку ниже, чтобы начать
+          </p>
+        </div>
       )}
 
       <button
         onClick={() => {
-          alert(`Привет, ${user?.first_name || 'путешественник'}! 👋\n\nSUP dating уже работает!`);
+          alert(
+            `Запускаем знакомства!\n\nПривет, ${user?.first_name || 'путешественник'}! 💘`
+          );
         }}
         style={{
-          padding: '18px 50px',
-          fontSize: '1.4rem',
+          padding: '18px 60px',
+          fontSize: '1.5rem',
           fontWeight: 'bold',
-          background: 'white',
-          color: '#667eea',
+          background: 'linear-gradient(90deg, #ff6b6b, #ff8e53)',
+          color: 'white',
           border: 'none',
           borderRadius: '50px',
           cursor: 'pointer',
-          boxShadow: '0 8px 25px rgba(0,0,0,0.25)',
+          boxShadow: '0 10px 30px rgba(255, 107, 107, 0.4)',
           transition: 'all 0.3s ease',
         }}
         onMouseOver={(e) => {
-          e.currentTarget.style.transform = 'translateY(-4px)';
-          e.currentTarget.style.boxShadow = '0 12px 35px rgba(0,0,0,0.35)';
+          e.currentTarget.style.transform = 'scale(1.08)';
+          e.currentTarget.style.boxShadow = '0 15px 40px rgba(255, 107, 107, 0.6)';
         }}
         onMouseOut={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.25)';
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.boxShadow = '0 10px 30px rgba(255, 107, 107, 0.4)';
         }}
       >
         Запустить знакомства!
       </button>
 
-      <p style={{ marginTop: '60px', fontSize: '1rem', opacity: 0.7 }}>
+      <p style={{ marginTop: '80px', fontSize: '1rem', opacity: 0.6 }}>
         Сделано с ❤️ в Telegram Mini App
       </p>
     </div>
