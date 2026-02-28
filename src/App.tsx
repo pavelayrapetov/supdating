@@ -39,16 +39,12 @@ function App() {
         setUser(initUser);
       }
 
-      // Загружаем сохранённую анкету
+      // Проверяем сохранённую анкету
       const saved = localStorage.getItem('sup_dating_profile');
       if (saved) {
         try {
           const parsed = JSON.parse(saved) as Profile;
           setProfile(parsed);
-          // Заполняем форму сохранёнными данными
-          setAge(parsed.age.toString());
-          setGender(parsed.gender);
-          setAbout(parsed.about);
           setScreen('search');
         } catch (e) {
           console.error('Ошибка загрузки анкеты:', e);
@@ -61,6 +57,15 @@ function App() {
       setScreen('profile');
     }
   }, []);
+
+  // Автоматически заполняем форму сохранёнными данными при открытии экрана анкеты
+  useEffect(() => {
+    if (screen === 'profile' && profile) {
+      setAge(profile.age.toString());
+      setGender(profile.gender);
+      setAbout(profile.about);
+    }
+  }, [screen, profile]);
 
   const handleSaveProfile = () => {
     if (!age || !gender) {
