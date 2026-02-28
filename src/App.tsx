@@ -17,6 +17,15 @@ interface Profile {
   createdAt: string;
 }
 
+interface CardProfile {
+  id: number;
+  name: string;
+  age: number;
+  gender: string;
+  about: string;
+  photo: string;
+}
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -27,25 +36,61 @@ function App() {
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [about, setAbout] = useState('');
 
+  // Индекс текущей карточки в поиске
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Моковые анкеты
+  const mockProfiles: CardProfile[] = [
+    {
+      id: 1,
+      name: 'Анастасия',
+      age: 24,
+      gender: 'female',
+      about: 'Люблю путешествия, кофе и хорошие разговоры до утра ☕✈️ Ищу того, с кем не захочется заканчивать вечер',
+      photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+    },
+    {
+      id: 2,
+      name: 'Максим',
+      age: 27,
+      gender: 'male',
+      about: 'Спорт, книги, кино и котики. Ищу девушку, с которой можно вместе смотреть сериалы и гулять по ночному городу 🌃',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+    },
+    {
+      id: 3,
+      name: 'Екатерина',
+      age: 22,
+      gender: 'female',
+      about: 'Танцы, музыка, природа. Обожаю спонтанные поездки и новых людей. Давай создадим историю? 🎶🌲',
+      photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+    },
+    {
+      id: 4,
+      name: 'Дмитрий',
+      age: 29,
+      gender: 'male',
+      about: 'Работаю в IT, люблю готовить, путешествовать и смотреть на звёзды. Ищу ту, с кем можно молчать и всё равно быть счастливыми ⭐',
+      photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+    },
+  ];
+
   useEffect(() => {
     if (window.Telegram?.WebApp) {
       const tg = window.Telegram.WebApp;
       tg.ready();
       tg.expand();
 
-      // Получаем пользователя из Telegram
       const initUser = tg.initDataUnsafe?.user as User | undefined;
       if (initUser) {
         setUser(initUser);
       }
 
-      // Загружаем сохранённую анкету
       const saved = localStorage.getItem('sup_dating_profile');
       if (saved) {
         try {
           const parsed = JSON.parse(saved) as Profile;
           setProfile(parsed);
-          // Заполняем форму при открытии экрана анкеты
           setAge(parsed.age.toString());
           setGender(parsed.gender);
           setAbout(parsed.about);
@@ -62,7 +107,7 @@ function App() {
     }
   }, []);
 
-  // Автоматически заполняем форму при открытии экрана анкеты (если анкета уже есть)
+  // Автозаполнение формы при повторном открытии
   useEffect(() => {
     if (screen === 'profile' && profile) {
       setAge(profile.age.toString());
@@ -95,6 +140,41 @@ function App() {
     setScreen('search');
     alert('Анкета сохранена! Ищем пару 💘');
   };
+
+  // Переход к следующей карточке
+  const nextCard = () => {
+    setCurrentIndex((prev) => prev + 1);
+  };
+
+  // Если карточки закончились
+  if (screen === 'search' && currentIndex >= mockProfiles.length) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          padding: '40px 20px',
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          color: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+        }}
+      >
+        <h1 style={{ fontSize: '3rem', marginBottom: '30px' }}>Поиск пары</h1>
+        <p style={{ fontSize: '1.8rem' }}>Карточки закончились 😔</p>
+        <p style={{ fontSize: '1.3rem', marginTop: '20px', opacity: 0.8 }}>
+          Пока нет новых анкет. Проверь позже!
+        </p>
+        {user && (
+          <p style={{ marginTop: '30px', fontSize: '1.3rem' }}>
+            Привет, {user.first_name}!
+          </p>
+        )}
+      </div>
+    );
+  }
 
   if (screen === 'loading') {
     return (
@@ -209,41 +289,7 @@ function App() {
   }
 
   if (screen === 'search') {
-    // Моковые анкеты для отображения (потом заменишь на реальные)
-    const mockProfiles = [
-      {
-        id: 1,
-        name: 'Анастасия',
-        age: 24,
-        gender: 'female',
-        about: 'Люблю путешествия, кофе и хорошие разговоры до утра ☕✈️ Ищу того, с кем не захочется заканчивать вечер',
-        photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
-      },
-      {
-        id: 2,
-        name: 'Максим',
-        age: 27,
-        gender: 'male',
-        about: 'Спорт, книги, кино и котики. Ищу девушку, с которой можно вместе смотреть сериалы и гулять по ночному городу 🌃',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
-      },
-      {
-        id: 3,
-        name: 'Екатерина',
-        age: 22,
-        gender: 'female',
-        about: 'Танцы, музыка, природа. Обожаю спонтанные поездки и новых людей. Давай создадим историю? 🎶🌲',
-        photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
-      },
-      {
-        id: 4,
-        name: 'Дмитрий',
-        age: 29,
-        gender: 'male',
-        about: 'Работаю в IT, люблю готовить, путешествовать и смотреть на звёзды. Ищу ту, с кем можно молчать и всё равно быть счастливыми ⭐',
-        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
-      },
-    ];
+    const currentProfile = mockProfiles[currentIndex];
 
     return (
       <div
@@ -263,88 +309,79 @@ function App() {
           Вот кто рядом с тобой прямо сейчас 🔥
         </p>
 
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '30px',
-          width: '100%',
-          maxWidth: '420px',
-        }}>
-          {mockProfiles.map((p) => (
-            <div
-              key={p.id}
-              style={{
-                background: 'rgba(255,255,255,0.1)',
-                borderRadius: '20px',
-                overflow: 'hidden',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-                backdropFilter: 'blur(10px)',
-              }}
-            >
-              <img
-                src={p.photo}
-                alt={p.name}
-                style={{
-                  width: '100%',
-                  height: '300px',
-                  objectFit: 'cover',
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '420px',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(10px)',
+          }}
+        >
+          <img
+            src={currentProfile.photo}
+            alt={currentProfile.name}
+            style={{
+              width: '100%',
+              height: '300px',
+              objectFit: 'cover',
+            }}
+          />
+          <div style={{ padding: '20px' }}>
+            <h2 style={{ fontSize: '1.8rem', margin: '0 0 8px' }}>
+              {currentProfile.name}, {currentProfile.age}
+            </h2>
+            <p style={{ fontSize: '1.1rem', margin: '0 0 15px', opacity: 0.9 }}>
+              {currentProfile.about}
+            </p>
+
+            <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', marginTop: '20px' }}>
+              <button
+                onClick={() => {
+                  alert(`Ты дизлайкнул ${currentProfile.name}`);
+                  setCurrentIndex((prev) => prev + 1);
                 }}
-              />
-              <div style={{ padding: '20px' }}>
-                <h2 style={{ fontSize: '1.8rem', margin: '0 0 8px' }}>
-                  {p.name}, {p.age}
-                </h2>
-                <p style={{ fontSize: '1.1rem', margin: '0 0 15px', opacity: 0.9 }}>
-                  {p.about}
-                </p>
+                style={{
+                  padding: '15px 40px',
+                  fontSize: '1.6rem',
+                  background: '#57606f',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  boxShadow: '0 5px 15px rgba(87,96,111,0.4)',
+                }}
+              >
+                👎
+              </button>
 
-                <div style={{ display: 'flex', gap: '30px', justifyContent: 'center' }}>
-                  <button
-                    onClick={() => alert(`Ты лайкнул ${p.name}! ❤️`)}
-                    style={{
-                      padding: '15px 40px',
-                      fontSize: '1.6rem',
-                      background: '#ff4757',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      boxShadow: '0 5px 15px rgba(255,71,87,0.4)',
-                    }}
-                  >
-                    ❤️
-                  </button>
-
-                  <button
-                    onClick={() => alert(`Ты дизлайкнул ${p.name}`)}
-                    style={{
-                      padding: '15px 40px',
-                      fontSize: '1.6rem',
-                      background: '#57606f',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      boxShadow: '0 5px 15px rgba(87,96,111,0.4)',
-                    }}
-                  >
-                    👎
-                  </button>
-                </div>
-              </div>
+              <button
+                onClick={() => {
+                  alert(`Ты лайкнул ${currentProfile.name}! ❤️`);
+                  setCurrentIndex((prev) => prev + 1);
+                }}
+                style={{
+                  padding: '15px 40px',
+                  fontSize: '1.6rem',
+                  background: '#ff4757',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  cursor: 'pointer',
+                  boxShadow: '0 5px 15px rgba(255,71,87,0.4)',
+                }}
+              >
+                ❤️
+              </button>
             </div>
-          ))}
+          </div>
         </div>
 
         {user && (
           <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
             Привет, {user.first_name}! Твоя анкета уже в поиске
-          </p>
-        )}
-
-        {profile && (
-          <p style={{ marginTop: '30px', fontSize: '1.1rem', opacity: 0.7 }}>
-            Твоя анкета сохранена (возраст: {profile.age})
           </p>
         )}
       </div>
