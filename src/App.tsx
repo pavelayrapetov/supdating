@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface User {
   id: number;
@@ -36,14 +36,14 @@ function App() {
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [about, setAbout] = useState('');
 
-  // Поиск: индекс текущей карточки
+  // Поиск: текущая карточка
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Для touch-свайпа
+  // Touch-свайп
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
-  // Моковые анкеты (потом заменишь на базу)
+  // Моковые анкеты (заменишь на базу позже)
   const mockProfiles: CardProfile[] = [
     {
       id: 1,
@@ -147,15 +147,15 @@ function App() {
 
   // Переход к следующей карточке
   const nextCard = () => {
-    setCurrentIndex((prev) => Math.min(prev + 1, mockProfiles.length));
+    setCurrentIndex((prev) => prev + 1);
   };
 
-  // Обработка touch-свайпа
-  const handleTouchStart = (e: React.TouchEvent) => {
+  // Touch-события для свайпа
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     touchEndX.current = e.touches[0].clientX;
   };
 
@@ -164,15 +164,19 @@ function App() {
 
     if (Math.abs(diff) > 80) { // минимальная дистанция свайпа
       if (diff > 0) {
-        // свайп влево → дизлайк
+        // влево → дизлайк
         console.log('Свайп влево');
         nextCard();
       } else {
-        // свайп вправо → лайк
+        // вправо → лайк
         console.log('Свайп вправо');
         nextCard();
       }
     }
+
+    // Сброс координат
+    touchStartX.current = 0;
+    touchEndX.current = 0;
   };
 
   // Если карточки закончились
@@ -329,7 +333,7 @@ function App() {
     );
   }
 
-  // Поиск
+  // Поиск с touch-свайпом
   const currentProfile = mockProfiles[currentIndex];
 
   return (
@@ -351,45 +355,38 @@ function App() {
       </p>
 
       <div
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         style={{
           width: '100%',
           maxWidth: '380px',
           height: '520px',
-          position: 'relative',
+          background: 'rgba(255,255,255,0.1)',
+          borderRadius: '20px',
+          overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          backdropFilter: 'blur(10px)',
+          touchAction: 'pan-y', // чтобы не мешал скролл страницы
+          cursor: 'grab',
         }}
       >
-        <div
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+        <img
+          src={currentProfile.photo}
+          alt={currentProfile.name}
           style={{
             width: '100%',
-            height: '100%',
-            background: 'rgba(255,255,255,0.1)',
-            borderRadius: '20px',
-            overflow: 'hidden',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-            backdropFilter: 'blur(10px)',
-            touchAction: 'pan-y', // чтобы не мешал скролл
+            height: '65%',
+            objectFit: 'cover',
           }}
-        >
-          <img
-            src={currentProfile.photo}
-            alt={currentProfile.name}
-            style={{
-              width: '100%',
-              height: '65%',
-              objectFit: 'cover',
-            }}
-          />
-          <div style={{ padding: '20px' }}>
-            <h2 style={{ fontSize: '1.8rem', margin: '0 0 8px' }}>
-              {currentProfile.name}, {currentProfile.age}
-            </h2>
-            <p style={{ fontSize: '1.1rem', margin: '0 0 15px', opacity: 0.9 }}>
-              {currentProfile.about}
-            </p>
-          </div>
+        />
+        <div style={{ padding: '20px' }}>
+          <h2 style={{ fontSize: '1.8rem', margin: '0 0 8px' }}>
+            {currentProfile.name}, {currentProfile.age}
+          </h2>
+          <p style={{ fontSize: '1.1rem', margin: '0 0 15px', opacity: 0.9 }}>
+            {currentProfile.about}
+          </p>
         </div>
       </div>
 
