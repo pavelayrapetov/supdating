@@ -31,12 +31,19 @@ function App() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [screen, setScreen] = useState<'loading' | 'profile' | 'search'>('loading');
 
+  // Форма анкеты
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [about, setAbout] = useState('');
 
+  // Поиск: индекс текущей карточки
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Для touch-свайпа
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+
+  // Моковые анкеты (потом заменишь на базу)
   const mockProfiles: CardProfile[] = [
     {
       id: 1,
@@ -44,7 +51,7 @@ function App() {
       age: 24,
       gender: 'female',
       about: 'Люблю путешествия, кофе и хорошие разговоры до утра ☕✈️ Ищу того, с кем не захочется заканчивать вечер',
-      photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+      photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800',
     },
     {
       id: 2,
@@ -52,7 +59,7 @@ function App() {
       age: 27,
       gender: 'male',
       about: 'Спорт, книги, кино и котики. Ищу девушку, с которой можно вместе смотреть сериалы и гулять по ночному городу 🌃',
-      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800',
     },
     {
       id: 3,
@@ -60,7 +67,7 @@ function App() {
       age: 22,
       gender: 'female',
       about: 'Танцы, музыка, природа. Обожаю спонтанные поездки и новых людей. Давай создадим историю? 🎶🌲',
-      photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+      photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800',
     },
     {
       id: 4,
@@ -68,7 +75,7 @@ function App() {
       age: 29,
       gender: 'male',
       about: 'Работаю в IT, люблю готовить, путешествовать и смотреть на звёзды. Ищу ту, с кем можно молчать и всё равно быть счастливыми ⭐',
-      photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+      photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800',
     },
   ];
 
@@ -104,6 +111,7 @@ function App() {
     }
   }, []);
 
+  // Автозагрузка формы при открытии анкеты
   useEffect(() => {
     if (screen === 'profile' && profile) {
       setAge(profile.age.toString());
@@ -137,9 +145,75 @@ function App() {
     alert('Анкета сохранена! Ищем пару 💘');
   };
 
+  // Переход к следующей карточке
   const nextCard = () => {
-    setCurrentIndex((prev) => prev + 1);
+    setCurrentIndex((prev) => Math.min(prev + 1, mockProfiles.length));
   };
+
+  // Обработка touch-свайпа
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    const diff = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(diff) > 80) { // минимальная дистанция свайпа
+      if (diff > 0) {
+        // свайп влево → дизлайк
+        console.log('Свайп влево');
+        nextCard();
+      } else {
+        // свайп вправо → лайк
+        console.log('Свайп вправо');
+        nextCard();
+      }
+    }
+  };
+
+  // Если карточки закончились
+  if (screen === 'search' && currentIndex >= mockProfiles.length) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          padding: '40px 20px',
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          color: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+        }}
+      >
+        <h1 style={{ fontSize: '3rem', marginBottom: '30px' }}>Поиск пары</h1>
+        <p style={{ fontSize: '1.8rem' }}>Карточки закончились 😔</p>
+        <p style={{ fontSize: '1.3rem', marginTop: '20px', opacity: 0.8 }}>
+          Пока нет новых анкет. Проверь позже!
+        </p>
+        <button
+          onClick={() => setScreen('profile')}
+          style={{
+            marginTop: '30px',
+            padding: '15px 40px',
+            fontSize: '1.3rem',
+            background: '#00ff88',
+            color: '#000',
+            border: 'none',
+            borderRadius: '50px',
+            cursor: 'pointer',
+          }}
+        >
+          Редактировать анкету
+        </button>
+      </div>
+    );
+  }
 
   if (screen === 'loading') {
     return (
@@ -172,7 +246,9 @@ function App() {
           alignItems: 'center',
         }}
       >
-        <h1 style={{ fontSize: '2.8rem', marginBottom: '30px' }}>Создай анкету</h1>
+        <h1 style={{ fontSize: '2.8rem', marginBottom: '30px' }}>
+          {profile ? 'Редактировать анкету' : 'Создай анкету'}
+        </h1>
 
         <input
           type="number"
@@ -241,7 +317,7 @@ function App() {
             boxShadow: '0 8px 25px rgba(255,107,107,0.4)',
           }}
         >
-          Сохранить и начать поиск
+          Сохранить
         </button>
 
         {user && (
@@ -253,36 +329,48 @@ function App() {
     );
   }
 
-  if (screen === 'search') {
-    const currentProfile = mockProfiles[currentIndex];
+  // Поиск
+  const currentProfile = mockProfiles[currentIndex];
 
-    return (
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        padding: '20px',
+        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+        color: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}
+    >
+      <h1 style={{ fontSize: '2.8rem', margin: '20px 0 30px' }}>Поиск пары</h1>
+
+      <p style={{ fontSize: '1.4rem', marginBottom: '30px', opacity: 0.9 }}>
+        Проводи пальцем вправо — лайк, влево — дизлайк 🔥
+      </p>
+
       <div
         style={{
-          minHeight: '100vh',
-          padding: '20px',
-          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-          color: 'white',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          width: '100%',
+          maxWidth: '380px',
+          height: '520px',
+          position: 'relative',
         }}
       >
-        <h1 style={{ fontSize: '2.8rem', margin: '20px 0 30px' }}>Поиск пары</h1>
-
-        <p style={{ fontSize: '1.4rem', marginBottom: '30px', opacity: 0.9 }}>
-          Вот кто рядом с тобой прямо сейчас 🔥
-        </p>
-
         <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
             width: '100%',
-            maxWidth: '420px',
+            height: '100%',
             background: 'rgba(255,255,255,0.1)',
             borderRadius: '20px',
             overflow: 'hidden',
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
             backdropFilter: 'blur(10px)',
+            touchAction: 'pan-y', // чтобы не мешал скролл
           }}
         >
           <img
@@ -290,7 +378,7 @@ function App() {
             alt={currentProfile.name}
             style={{
               width: '100%',
-              height: '300px',
+              height: '65%',
               objectFit: 'cover',
             }}
           />
@@ -301,59 +389,34 @@ function App() {
             <p style={{ fontSize: '1.1rem', margin: '0 0 15px', opacity: 0.9 }}>
               {currentProfile.about}
             </p>
-
-            <div style={{ display: 'flex', gap: '40px', justifyContent: 'center', marginTop: '20px' }}>
-              <button
-                onClick={() => {
-                  alert(`Ты дизлайкнул ${currentProfile.name}`);
-                  nextCard();
-                }}
-                style={{
-                  padding: '15px 40px',
-                  fontSize: '1.6rem',
-                  background: '#57606f',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  boxShadow: '0 5px 15px rgba(87,96,111,0.4)',
-                }}
-              >
-                👎
-              </button>
-
-              <button
-                onClick={() => {
-                  alert(`Ты лайкнул ${currentProfile.name}! ❤️`);
-                  nextCard();
-                }}
-                style={{
-                  padding: '15px 40px',
-                  fontSize: '1.6rem',
-                  background: '#ff4757',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  boxShadow: '0 5px 15px rgba(255,71,87,0.4)',
-                }}
-              >
-                ❤️
-              </button>
-            </div>
           </div>
         </div>
-
-        {user && (
-          <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
-            Привет, {user.first_name}! Твоя анкета уже в поиске
-          </p>
-        )}
       </div>
-    );
-  }
 
-  return null;
+      <button
+        onClick={() => setScreen('profile')}
+        style={{
+          marginTop: '40px',
+          padding: '12px 40px',
+          fontSize: '1.2rem',
+          background: '#00ff88',
+          color: '#000',
+          border: 'none',
+          borderRadius: '50px',
+          cursor: 'pointer',
+          boxShadow: '0 4px 15px rgba(0,255,136,0.3)',
+        }}
+      >
+        Редактировать анкету
+      </button>
+
+      {user && (
+        <p style={{ marginTop: '30px', fontSize: '1.2rem', opacity: 0.8 }}>
+          Привет, {user.first_name}!
+        </p>
+      )}
+    </div>
+  );
 }
 
 export default App;
