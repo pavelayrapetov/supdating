@@ -31,15 +31,12 @@ function App() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [screen, setScreen] = useState<'loading' | 'profile' | 'search'>('loading');
 
-  // Состояние формы анкеты
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [about, setAbout] = useState('');
 
-  // Индекс текущей карточки
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Моковые анкеты (можно потом заменить на реальные)
   const mockProfiles: CardProfile[] = [
     {
       id: 1,
@@ -107,7 +104,6 @@ function App() {
     }
   }, []);
 
-  // Автозагрузка формы при открытии экрана анкеты
   useEffect(() => {
     if (screen === 'profile' && profile) {
       setAge(profile.age.toString());
@@ -141,7 +137,6 @@ function App() {
     alert('Анкета сохранена! Ищем пару 💘');
   };
 
-  // Переход к следующей карточке
   const nextCard = () => {
     setCurrentIndex((prev) => prev + 1);
   };
@@ -311,7 +306,7 @@ function App() {
               <button
                 onClick={() => {
                   alert(`Ты дизлайкнул ${currentProfile.name}`);
-                  setCurrentIndex((prev) => prev + 1);
+                  nextCard();
                 }}
                 style={{
                   padding: '15px 40px',
@@ -330,7 +325,7 @@ function App() {
               <button
                 onClick={() => {
                   alert(`Ты лайкнул ${currentProfile.name}! ❤️`);
-                  setCurrentIndex((prev) => prev + 1);
+                  nextCard();
                 }}
                 style={{
                   padding: '15px 40px',
