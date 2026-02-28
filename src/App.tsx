@@ -39,12 +39,16 @@ function App() {
         setUser(initUser);
       }
 
-      // Проверяем сохранённую анкету
+      // Загружаем сохранённую анкету
       const saved = localStorage.getItem('sup_dating_profile');
       if (saved) {
         try {
           const parsed = JSON.parse(saved) as Profile;
           setProfile(parsed);
+          // Заполняем форму при повторном открытии
+          setAge(parsed.age.toString());
+          setGender(parsed.gender);
+          setAbout(parsed.about);
           setScreen('search');
         } catch (e) {
           console.error('Ошибка загрузки анкеты:', e);
@@ -57,15 +61,6 @@ function App() {
       setScreen('profile');
     }
   }, []);
-
-  // Автоматически заполняем форму сохранёнными данными при открытии экрана анкеты
-  useEffect(() => {
-    if (screen === 'profile' && profile) {
-      setAge(profile.age.toString());
-      setGender(profile.gender);
-      setAbout(profile.about);
-    }
-  }, [screen, profile]);
 
   const handleSaveProfile = () => {
     if (!age || !gender) {
@@ -205,54 +200,136 @@ function App() {
   }
 
   if (screen === 'search') {
+    // Моковые анкеты для отображения
+    const mockProfiles = [
+      {
+        id: 1,
+        name: 'Анастасия',
+        age: 24,
+        gender: 'female',
+        about: 'Люблю путешествия, кофе и хорошие разговоры до утра ☕✈️ Ищу того, с кем не захочется заканчивать вечер',
+        photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+      },
+      {
+        id: 2,
+        name: 'Максим',
+        age: 27,
+        gender: 'male',
+        about: 'Спорт, книги, кино и котики. Ищу девушку, с которой можно вместе смотреть сериалы и гулять по ночному городу 🌃',
+        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+      },
+      {
+        id: 3,
+        name: 'Екатерина',
+        age: 22,
+        gender: 'female',
+        about: 'Танцы, музыка, природа. Обожаю спонтанные поездки и новых людей. Давай создадим историю? 🎶🌲',
+        photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+      },
+      {
+        id: 4,
+        name: 'Дмитрий',
+        age: 29,
+        gender: 'male',
+        about: 'Работаю в IT, люблю готовить, путешествовать и смотреть на звёзды. Ищу ту, с кем можно молчать и всё равно быть счастливыми ⭐',
+        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+      },
+    ];
+
     return (
       <div
         style={{
           minHeight: '100vh',
-          padding: '40px 20px',
+          padding: '20px',
           background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
           color: 'white',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          textAlign: 'center',
         }}
       >
-        <h1 style={{ fontSize: '3.2rem', marginBottom: '30px' }}>Поиск пары</h1>
+        <h1 style={{ fontSize: '2.8rem', margin: '20px 0 30px' }}>Поиск пары</h1>
 
-        <p style={{ fontSize: '1.6rem', marginBottom: '40px', opacity: 0.9 }}>
-          Ищем для тебя идеальную пару...
+        <p style={{ fontSize: '1.4rem', marginBottom: '30px', opacity: 0.9 }}>
+          Вот кто рядом с тобой прямо сейчас 🔥
         </p>
 
-        <div style={{ fontSize: '3rem', margin: '40px 0' }}>🔥</div>
-        <p style={{ fontSize: '2rem', marginBottom: '60px' }}>Найдено 3 человека рядом</p>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '30px',
+          width: '100%',
+          maxWidth: '420px',
+        }}>
+          {mockProfiles.map((p) => (
+            <div
+              key={p.id}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                borderRadius: '20px',
+                overflow: 'hidden',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                backdropFilter: 'blur(10px)',
+              }}
+            >
+              <img
+                src={p.photo}
+                alt={p.name}
+                style={{
+                  width: '100%',
+                  height: '300px',
+                  objectFit: 'cover',
+                }}
+              />
+              <div style={{ padding: '20px' }}>
+                <h2 style={{ fontSize: '1.8rem', margin: '0 0 8px' }}>
+                  {p.name}, {p.age}
+                </h2>
+                <p style={{ fontSize: '1.1rem', margin: '0 0 15px', opacity: 0.9 }}>
+                  {p.about}
+                </p>
 
-        <button
-          onClick={() => alert('Скоро здесь будут реальные анкеты с фото и описанием 💘')}
-          style={{
-            padding: '18px 60px',
-            fontSize: '1.5rem',
-            fontWeight: 'bold',
-            background: '#ff6b6b',
-            color: 'white',
-            border: 'none',
-            borderRadius: '50px',
-            cursor: 'pointer',
-            boxShadow: '0 8px 25px rgba(255,107,107,0.4)',
-          }}
-        >
-          Показать анкеты
-        </button>
+                <div style={{ display: 'flex', gap: '30px', justifyContent: 'center' }}>
+                  <button
+                    onClick={() => alert(`Ты лайкнул ${p.name}! ❤️`)}
+                    style={{
+                      padding: '15px 40px',
+                      fontSize: '1.6rem',
+                      background: '#ff4757',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '50%',
+                      cursor: 'pointer',
+                      boxShadow: '0 5px 15px rgba(255,71,87,0.4)',
+                    }}
+                  >
+                    ❤️
+                  </button>
 
-        {profile && (
-          <p style={{ marginTop: '40px', fontSize: '1.3rem', opacity: 0.9 }}>
-            Твоя анкета: {profile.gender === 'male' ? 'Мужчина' : profile.gender === 'female' ? 'Женщина' : 'Другое'}, {profile.age} лет
-          </p>
-        )}
+                  <button
+                    onClick={() => alert(`Ты дизлайкнул ${p.name}`)}
+                    style={{
+                      padding: '15px 40px',
+                      fontSize: '1.6rem',
+                      background: '#57606f',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '50%',
+                      cursor: 'pointer',
+                      boxShadow: '0 5px 15px rgba(87,96,111,0.4)',
+                    }}
+                  >
+                    👎
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {user && (
-          <p style={{ marginTop: '20px', fontSize: '1.3rem' }}>
-            Привет, {user.first_name}!
+          <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
+            Привет, {user.first_name}! Твоя анкета уже в поиске
           </p>
         )}
       </div>
