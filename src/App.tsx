@@ -36,10 +36,10 @@ function App() {
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [about, setAbout] = useState('');
 
-  // Индекс текущей карточки в поиске
+  // Индекс текущей карточки
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Моковые анкеты
+  // Моковые анкеты (можно потом заменить на реальные)
   const mockProfiles: CardProfile[] = [
     {
       id: 1,
@@ -107,7 +107,7 @@ function App() {
     }
   }, []);
 
-  // Автозаполнение формы при повторном открытии
+  // Автозагрузка формы при открытии экрана анкеты
   useEffect(() => {
     if (screen === 'profile' && profile) {
       setAge(profile.age.toString());
@@ -145,36 +145,6 @@ function App() {
   const nextCard = () => {
     setCurrentIndex((prev) => prev + 1);
   };
-
-  // Если карточки закончились
-  if (screen === 'search' && currentIndex >= mockProfiles.length) {
-    return (
-      <div
-        style={{
-          minHeight: '100vh',
-          padding: '40px 20px',
-          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-          color: 'white',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          textAlign: 'center',
-        }}
-      >
-        <h1 style={{ fontSize: '3rem', marginBottom: '30px' }}>Поиск пары</h1>
-        <p style={{ fontSize: '1.8rem' }}>Карточки закончились 😔</p>
-        <p style={{ fontSize: '1.3rem', marginTop: '20px', opacity: 0.8 }}>
-          Пока нет новых анкет. Проверь позже!
-        </p>
-        {user && (
-          <p style={{ marginTop: '30px', fontSize: '1.3rem' }}>
-            Привет, {user.first_name}!
-          </p>
-        )}
-      </div>
-    );
-  }
 
   if (screen === 'loading') {
     return (
