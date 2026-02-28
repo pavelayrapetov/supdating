@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import TinderCard from 'react-tinder-card';
 
 interface User {
   id: number;
@@ -17,15 +18,68 @@ interface Profile {
   createdAt: string;
 }
 
+interface CardProfile {
+  id: number;
+  name: string;
+  age: number;
+  gender: string;
+  about: string;
+  photo: string;
+}
+
 function App() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [screen, setScreen] = useState<'loading' | 'profile' | 'search'>('loading');
 
-  // Состояние формы анкеты
+  // Форма анкеты
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [about, setAbout] = useState('');
+
+  // Для Tinder-стиля
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef(currentIndex);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
+
+  // Моковые анкеты
+  const mockProfiles: CardProfile[] = [
+    {
+      id: 1,
+      name: 'Анастасия',
+      age: 24,
+      gender: 'female',
+      about: 'Люблю путешествия, кофе и хорошие разговоры до утра ☕✈️ Ищу того, с кем не захочется заканчивать вечер',
+      photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+    },
+    {
+      id: 2,
+      name: 'Максим',
+      age: 27,
+      gender: 'male',
+      about: 'Спорт, книги, кино и котики. Ищу девушку, с которой можно вместе смотреть сериалы и гулять по ночному городу 🌃',
+      photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+    },
+    {
+      id: 3,
+      name: 'Екатерина',
+      age: 22,
+      gender: 'female',
+      about: 'Танцы, музыка, природа. Обожаю спонтанные поездки и новых людей. Давай создадим историю? 🎶🌲',
+      photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+    },
+    {
+      id: 4,
+      name: 'Дмитрий',
+      age: 29,
+      gender: 'male',
+      about: 'Работаю в IT, люблю готовить, путешествовать и смотреть на звёзды. Ищу ту, с кем можно молчать и всё равно быть счастливыми ⭐',
+      photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
+    },
+  ];
 
   useEffect(() => {
     if (window.Telegram?.WebApp) {
@@ -84,17 +138,56 @@ function App() {
     alert('Анкета сохранена! Ищем пару 💘');
   };
 
+  const onSwipe = (direction: string) => {
+    console.log('You swiped: ' + direction);
+
+    // Переходим к следующей карточке
+    setCurrentIndex((prevIndex) => prevIndex + 1);
+  };
+
+  // Если закончились карточки
+  if (screen === 'search' && currentIndex >= mockProfiles.length) {
+    return (
+      <div
+        style={{
+          minHeight: '100vh',
+          padding: '40px 20px',
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          color: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textAlign: 'center',
+        }}
+      >
+        <h1 style={{ fontSize: '3rem', marginBottom: '30px' }}>Поиск пары</h1>
+        <p style={{ fontSize: '1.8rem' }}>Карточки закончились 😔</p>
+        <p style={{ fontSize: '1.3rem', marginTop: '20px', opacity: 0.8 }}>
+          Пока нет новых анкет. Проверь позже!
+        </p>
+        {user && (
+          <p style={{ marginTop: '30px', fontSize: '1.3rem' }}>
+            Привет, {user.first_name}!
+          </p>
+        )}
+      </div>
+    );
+  }
+
   if (screen === 'loading') {
     return (
-      <div style={{
-        height: '100vh',
-        background: '#0f0f1a',
-        color: 'white',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '1.5rem',
-      }}>
+      <div
+        style={{
+          height: '100vh',
+          background: '#0f0f1a',
+          color: 'white',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '1.5rem',
+        }}
+      >
         Загрузка...
       </div>
     );
@@ -102,15 +195,17 @@ function App() {
 
   if (screen === 'profile') {
     return (
-      <div style={{
-        minHeight: '100vh',
-        padding: '40px 20px',
-        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-        color: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-      }}>
+      <div
+        style={{
+          minHeight: '100vh',
+          padding: '40px 20px',
+          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+          color: 'white',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
         <h1 style={{ fontSize: '2.8rem', marginBottom: '30px' }}>Создай анкету</h1>
 
         <input
@@ -118,13 +213,29 @@ function App() {
           placeholder="Возраст"
           value={age}
           onChange={(e) => setAge(e.target.value)}
-          style={{ padding: '15px', margin: '10px', width: '80%', borderRadius: '12px', border: 'none', fontSize: '1.2rem' }}
+          style={{
+            padding: '15px',
+            margin: '10px',
+            width: '80%',
+            maxWidth: '400px',
+            borderRadius: '12px',
+            border: 'none',
+            fontSize: '1.2rem',
+          }}
         />
 
         <select
           value={gender}
           onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other' | '')}
-          style={{ padding: '15px', margin: '10px', width: '80%', borderRadius: '12px', border: 'none', fontSize: '1.2rem' }}
+          style={{
+            padding: '15px',
+            margin: '10px',
+            width: '80%',
+            maxWidth: '400px',
+            borderRadius: '12px',
+            border: 'none',
+            fontSize: '1.2rem',
+          }}
         >
           <option value="">Выберите пол</option>
           <option value="male">Мужчина</option>
@@ -136,7 +247,17 @@ function App() {
           placeholder="Расскажи о себе..."
           value={about}
           onChange={(e) => setAbout(e.target.value)}
-          style={{ padding: '15px', margin: '10px', width: '80%', height: '140px', borderRadius: '12px', border: 'none', fontSize: '1.2rem', resize: 'vertical' }}
+          style={{
+            padding: '15px',
+            margin: '10px',
+            width: '80%',
+            maxWidth: '400px',
+            height: '140px',
+            borderRadius: '12px',
+            border: 'none',
+            fontSize: '1.2rem',
+            resize: 'vertical',
+          }}
         />
 
         <button
@@ -145,11 +266,13 @@ function App() {
             marginTop: '30px',
             padding: '18px 60px',
             fontSize: '1.5rem',
+            fontWeight: 'bold',
             background: 'linear-gradient(90deg, #ff6b6b, #ff8e53)',
             color: 'white',
             border: 'none',
             borderRadius: '50px',
             cursor: 'pointer',
+            boxShadow: '0 8px 25px rgba(255,107,107,0.4)',
           }}
         >
           Сохранить и начать поиск
@@ -165,41 +288,7 @@ function App() {
   }
 
   if (screen === 'search') {
-    // Моковые анкеты
-    const mockProfiles = [
-      {
-        id: 1,
-        name: 'Анастасия',
-        age: 24,
-        gender: 'female',
-        about: 'Люблю путешествия, кофе и хорошие разговоры до утра ☕✈️ Ищу того, с кем не захочется заканчивать вечер',
-        photo: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
-      },
-      {
-        id: 2,
-        name: 'Максим',
-        age: 27,
-        gender: 'male',
-        about: 'Спорт, книги, кино и котики. Ищу девушку, с которой можно вместе смотреть сериалы и гулять по ночному городу 🌃',
-        photo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
-      },
-      {
-        id: 3,
-        name: 'Екатерина',
-        age: 22,
-        gender: 'female',
-        about: 'Танцы, музыка, природа. Обожаю спонтанные поездки и новых людей. Давай создадим историю? 🎶🌲',
-        photo: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
-      },
-      {
-        id: 4,
-        name: 'Дмитрий',
-        age: 29,
-        gender: 'male',
-        about: 'Работаю в IT, люблю готовить, путешествовать и смотреть на звёзды. Ищу ту, с кем можно молчать и всё равно быть счастливыми ⭐',
-        photo: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=987&q=80',
-      },
-    ];
+    const currentProfile = mockProfiles[currentIndex];
 
     return (
       <div
@@ -215,21 +304,24 @@ function App() {
       >
         <h1 style={{ fontSize: '2.8rem', margin: '20px 0 30px' }}>Поиск пары</h1>
 
-        <p style={{ fontSize: '1.4rem', marginBottom: '30px', opacity: 0.9 }}>
-          Вот кто рядом с тобой прямо сейчас 🔥
-        </p>
-
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '30px',
-          width: '100%',
-          maxWidth: '420px',
-        }}>
-          {mockProfiles.map((p) => (
+        <div
+          style={{
+            width: '100%',
+            maxWidth: '380px',
+            height: '480px',
+            position: 'relative',
+          }}
+        >
+          <TinderCard
+            onSwipe={(dir) => onSwipe(dir)}
+            preventSwipe={['up', 'down']}
+            flickOnSwipe={true}
+            className="swipe-card"
+          >
             <div
-              key={p.id}
               style={{
+                width: '100%',
+                height: '100%',
                 background: 'rgba(255,255,255,0.1)',
                 borderRadius: '20px',
                 overflow: 'hidden',
@@ -238,70 +330,64 @@ function App() {
               }}
             >
               <img
-                src={p.photo}
-                alt={p.name}
+                src={currentProfile.photo}
+                alt={currentProfile.name}
                 style={{
                   width: '100%',
-                  height: '300px',
+                  height: '65%',
                   objectFit: 'cover',
                 }}
               />
               <div style={{ padding: '20px' }}>
                 <h2 style={{ fontSize: '1.8rem', margin: '0 0 8px' }}>
-                  {p.name}, {p.age}
+                  {currentProfile.name}, {currentProfile.age}
                 </h2>
                 <p style={{ fontSize: '1.1rem', margin: '0 0 15px', opacity: 0.9 }}>
-                  {p.about}
+                  {currentProfile.about}
                 </p>
-
-                <div style={{ display: 'flex', gap: '30px', justifyContent: 'center' }}>
-                  <button
-                    onClick={() => alert(`Ты лайкнул ${p.name}! ❤️`)}
-                    style={{
-                      padding: '15px 40px',
-                      fontSize: '1.6rem',
-                      background: '#ff4757',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      boxShadow: '0 5px 15px rgba(255,71,87,0.4)',
-                    }}
-                  >
-                    ❤️
-                  </button>
-
-                  <button
-                    onClick={() => alert(`Ты дизлайкнул ${p.name}`)}
-                    style={{
-                      padding: '15px 40px',
-                      fontSize: '1.6rem',
-                      background: '#57606f',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '50%',
-                      cursor: 'pointer',
-                      boxShadow: '0 5px 15px rgba(87,96,111,0.4)',
-                    }}
-                  >
-                    👎
-                  </button>
-                </div>
               </div>
             </div>
-          ))}
+          </TinderCard>
+        </div>
+
+        {/* Кнопки под карточкой */}
+        <div style={{ display: 'flex', gap: '60px', marginTop: '40px' }}>
+          <button
+            onClick={() => onSwipe('left')}
+            style={{
+              padding: '20px 40px',
+              fontSize: '2rem',
+              background: '#57606f',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              boxShadow: '0 8px 25px rgba(87,96,111,0.4)',
+            }}
+          >
+            👎
+          </button>
+
+          <button
+            onClick={() => onSwipe('right')}
+            style={{
+              padding: '20px 40px',
+              fontSize: '2rem',
+              background: '#ff4757',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              boxShadow: '0 8px 25px rgba(255,71,87,0.4)',
+            }}
+          >
+            ❤️
+          </button>
         </div>
 
         {user && (
           <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
             Привет, {user.first_name}! Твоя анкета уже в поиске
-          </p>
-        )}
-
-        {/* ← Используем profile, чтобы TS не ругался */}
-        {profile && (
-          <p style={{ marginTop: '30px', fontSize: '1.1rem', opacity: 0.7 }}>
-            Твоя анкета сохранена (возраст: {profile.age})
           </p>
         )}
       </div>
