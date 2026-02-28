@@ -33,19 +33,16 @@ function App() {
       tg.ready();
       tg.expand();
 
-      // Получаем пользователя
       const initUser = tg.initDataUnsafe?.user as User | undefined;
       if (initUser) {
         setUser(initUser);
       }
 
-      // Загружаем сохранённую анкету
       const saved = localStorage.getItem('sup_dating_profile');
       if (saved) {
         try {
           const parsed = JSON.parse(saved) as Profile;
           setProfile(parsed);
-          // Заполняем форму при повторном открытии
           setAge(parsed.age.toString());
           setGender(parsed.gender);
           setAbout(parsed.about);
@@ -89,17 +86,15 @@ function App() {
 
   if (screen === 'loading') {
     return (
-      <div
-        style={{
-          height: '100vh',
-          background: '#0f0f1a',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.5rem',
-        }}
-      >
+      <div style={{
+        height: '100vh',
+        background: '#0f0f1a',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.5rem',
+      }}>
         Загрузка...
       </div>
     );
@@ -107,17 +102,15 @@ function App() {
 
   if (screen === 'profile') {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          padding: '40px 20px',
-          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-          color: 'white',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
+      <div style={{
+        minHeight: '100vh',
+        padding: '40px 20px',
+        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+        color: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+      }}>
         <h1 style={{ fontSize: '2.8rem', marginBottom: '30px' }}>Создай анкету</h1>
 
         <input
@@ -125,29 +118,13 @@ function App() {
           placeholder="Возраст"
           value={age}
           onChange={(e) => setAge(e.target.value)}
-          style={{
-            padding: '15px',
-            margin: '10px',
-            width: '80%',
-            maxWidth: '400px',
-            borderRadius: '12px',
-            border: 'none',
-            fontSize: '1.2rem',
-          }}
+          style={{ padding: '15px', margin: '10px', width: '80%', borderRadius: '12px', border: 'none', fontSize: '1.2rem' }}
         />
 
         <select
           value={gender}
           onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other' | '')}
-          style={{
-            padding: '15px',
-            margin: '10px',
-            width: '80%',
-            maxWidth: '400px',
-            borderRadius: '12px',
-            border: 'none',
-            fontSize: '1.2rem',
-          }}
+          style={{ padding: '15px', margin: '10px', width: '80%', borderRadius: '12px', border: 'none', fontSize: '1.2rem' }}
         >
           <option value="">Выберите пол</option>
           <option value="male">Мужчина</option>
@@ -159,17 +136,7 @@ function App() {
           placeholder="Расскажи о себе..."
           value={about}
           onChange={(e) => setAbout(e.target.value)}
-          style={{
-            padding: '15px',
-            margin: '10px',
-            width: '80%',
-            maxWidth: '400px',
-            height: '140px',
-            borderRadius: '12px',
-            border: 'none',
-            fontSize: '1.2rem',
-            resize: 'vertical',
-          }}
+          style={{ padding: '15px', margin: '10px', width: '80%', height: '140px', borderRadius: '12px', border: 'none', fontSize: '1.2rem', resize: 'vertical' }}
         />
 
         <button
@@ -178,13 +145,11 @@ function App() {
             marginTop: '30px',
             padding: '18px 60px',
             fontSize: '1.5rem',
-            fontWeight: 'bold',
             background: 'linear-gradient(90deg, #ff6b6b, #ff8e53)',
             color: 'white',
             border: 'none',
             borderRadius: '50px',
             cursor: 'pointer',
-            boxShadow: '0 8px 25px rgba(255,107,107,0.4)',
           }}
         >
           Сохранить и начать поиск
@@ -200,7 +165,7 @@ function App() {
   }
 
   if (screen === 'search') {
-    // Моковые анкеты для отображения
+    // Моковые анкеты
     const mockProfiles = [
       {
         id: 1,
@@ -330,6 +295,13 @@ function App() {
         {user && (
           <p style={{ marginTop: '40px', fontSize: '1.2rem', opacity: 0.8 }}>
             Привет, {user.first_name}! Твоя анкета уже в поиске
+          </p>
+        )}
+
+        {/* ← Используем profile, чтобы TS не ругался */}
+        {profile && (
+          <p style={{ marginTop: '30px', fontSize: '1.1rem', opacity: 0.7 }}>
+            Твоя анкета сохранена (возраст: {profile.age})
           </p>
         )}
       </div>
