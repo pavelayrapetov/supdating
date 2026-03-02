@@ -14,6 +14,7 @@ interface Profile {
   age: number;
   gender: 'male' | 'female' | 'other';
   about: string;
+  photo?: string;           // base64 фото
   createdAt: string;
 }
 
@@ -34,11 +35,15 @@ function App() {
   const [age, setAge] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
   const [about, setAbout] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState<string>('');
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
+  // Анимация свайпа
+  const [offsetX, setOffsetX] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startX = useRef(0);
 
   const mockProfiles: CardProfile[] = [
     {
@@ -94,6 +99,7 @@ function App() {
           setAge(parsed.age.toString());
           setGender(parsed.gender);
           setAbout(parsed.about);
+          setProfilePhoto(parsed.photo || '');
           setScreen('search');
         } catch (e) {
           console.error('Ошибка загрузки анкеты:', e);
@@ -112,6 +118,7 @@ function App() {
       setAge(profile.age.toString());
       setGender(profile.gender);
       setAbout(profile.about);
+      setProfilePhoto(profile.photo || '');
     }
   }, [screen, profile]);
 
@@ -131,6 +138,7 @@ function App() {
       age: ageNum,
       gender,
       about: about.trim(),
+      photo: profilePhoto,
       createdAt: new Date().toISOString(),
     };
 
@@ -140,33 +148,54 @@ function App() {
     alert('Анкета сохранена! Ищем пару 💘');
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const nextCard = () => {
     setCurrentIndex((prev) => prev + 1);
+    setOffsetX(0);
+    setRotation(0);
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
+    if (e.touches.length !== 1) return;
+    startX.current = e.touches[0].clientX;
+    setIsDragging(true);
     e.preventDefault();
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchEndX.current = e.touches[0].clientX;
+    if (!isDragging || e.touches.length !== 1) return;
+
+    const currentX = e.touches[0].clientX;
+    const diffX = currentX - startX.current;
+
+    setOffsetX(diffX);
+    setRotation(diffX * 0.08); // поворот до ±15 градусов
     e.preventDefault();
   };
 
   const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
+    if (!isDragging) return;
+    setIsDragging(false);
 
-    if (Math.abs(diff) > 80) {
-      if (diff > 0) {
-        nextCard();
-      } else {
-        nextCard();
-      }
+    const threshold = 120;
+
+    if (Math.abs(offsetX) > threshold) {
+      nextCard();
+    } else {
+      // Возврат в центр
+      setOffsetX(0);
+      setRotation(0);
     }
-
-    touchStartX.current = 0;
-    touchEndX.current = 0;
   };
 
   if (screen === 'loading') {
@@ -199,12 +228,12 @@ function App() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px 20px 40px',
+        padding: '20px',
         boxSizing: 'border-box',
       }}>
         <h1 style={{
-          fontSize: '2.4rem',
-          marginBottom: '25px',
+          fontSize: '2.6rem',
+          marginBottom: '30px',
           textAlign: 'center',
           fontWeight: 'bold',
         }}>
@@ -217,13 +246,13 @@ function App() {
           value={age}
           onChange={(e) => setAge(e.target.value)}
           style={{
-            padding: '16px',
-            margin: '10px 0',
+            padding: '18px',
+            margin: '12px 0',
             width: '88%',
             maxWidth: '380px',
-            borderRadius: '14px',
+            borderRadius: '16px',
             border: 'none',
-            fontSize: '1.25rem',
+            fontSize: '1.3rem',
             background: 'rgba(255,255,255,0.18)',
             color: 'white',
           }}
@@ -233,13 +262,13 @@ function App() {
           value={gender}
           onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other' | '')}
           style={{
-            padding: '16px',
-            margin: '10px 0',
+            padding: '18px',
+            margin: '12px 0',
             width: '88%',
             maxWidth: '380px',
-            borderRadius: '14px',
+            borderRadius: '16px',
             border: 'none',
-            fontSize: '1.25rem',
+            fontSize: '1.3rem',
             background: 'rgba(255,255,255,0.18)',
             color: 'white',
           }}
@@ -255,40 +284,73 @@ function App() {
           value={about}
           onChange={(e) => setAbout(e.target.value)}
           style={{
-            padding: '16px',
-            margin: '10px 0',
+            padding: '18px',
+            margin: '12px 0',
             width: '88%',
             maxWidth: '380px',
-            height: '110px',
-            borderRadius: '14px',
+            height: '130px',
+            borderRadius: '16px',
             border: 'none',
-            fontSize: '1.25rem',
+            fontSize: '1.3rem',
             background: 'rgba(255,255,255,0.18)',
             color: 'white',
             resize: 'none',
           }}
         />
 
+        {/* Поле для загрузки фото */}
+        <div style={{ margin: '15px 0', width: '88%', maxWidth: '380px' }}>
+          <label style={{ display: 'block', marginBottom: '8px', fontSize: '1.2rem' }}>
+            Фото профиля
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handlePhotoChange}
+            style={{
+              width: '100%',
+              padding: '12px',
+              background: 'rgba(255,255,255,0.18)',
+              borderRadius: '12px',
+              color: 'white',
+              border: 'none',
+            }}
+          />
+          {profilePhoto && (
+            <img
+              src={profilePhoto}
+              alt="Предпросмотр"
+              style={{
+                marginTop: '12px',
+                width: '100%',
+                maxHeight: '180px',
+                objectFit: 'cover',
+                borderRadius: '12px',
+              }}
+            />
+          )}
+        </div>
+
         <button
           onClick={handleSaveProfile}
           style={{
             marginTop: '25px',
-            padding: '16px 70px',
-            fontSize: '1.4rem',
+            padding: '18px 80px',
+            fontSize: '1.5rem',
             fontWeight: 'bold',
             background: 'linear-gradient(90deg, #ff6b6b, #ff8e53)',
             color: 'white',
             border: 'none',
-            borderRadius: '50px',
+            borderRadius: '60px',
             cursor: 'pointer',
-            boxShadow: '0 6px 20px rgba(255,107,107,0.4)',
+            boxShadow: '0 8px 25px rgba(255,107,107,0.5)',
           }}
         >
           Сохранить
         </button>
 
         {user && (
-          <p style={{ marginTop: '20px', fontSize: '1.3rem' }}>
+          <p style={{ marginTop: '25px', fontSize: '1.4rem' }}>
             Привет, {user.first_name}!
           </p>
         )}
@@ -296,7 +358,7 @@ function App() {
     );
   }
 
-  // Поиск
+  // Поиск с анимацией свайпа
   const currentProfile = mockProfiles[currentIndex];
 
   return (
@@ -315,8 +377,8 @@ function App() {
       <h1 style={{ fontSize: '2.4rem', margin: '15px 0 10px' }}>Поиск пары</h1>
 
       <p style={{
-        fontSize: '1.1rem',
-        marginBottom: '10px',
+        fontSize: '1.2rem',
+        marginBottom: '15px',
         opacity: 0.9,
         textAlign: 'center',
         padding: '0 20px',
@@ -325,60 +387,88 @@ function App() {
       </p>
 
       <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         style={{
+          position: 'relative',
           width: '90%',
           maxWidth: '360px',
-          height: '440px', // уменьшил, чтобы кнопка не уезжала
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '20px',
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-          backdropFilter: 'blur(10px)',
-          touchAction: 'pan-y pinch-zoom',
+          height: '480px',
           marginTop: 'auto',
-          marginBottom: '20px', // фиксированный отступ снизу
+          marginBottom: '60px', // место для кнопки
         }}
       >
-        <img
-          src={currentProfile.photo}
-          alt={currentProfile.name}
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
             width: '100%',
-            height: '58%',
-            objectFit: 'cover',
+            height: '100%',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(10px)',
+            transform: `translateX(${offsetX}px) rotate(${rotation}deg)`,
+            transition: isDragging ? 'none' : 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            touchAction: 'none',
+            userSelect: 'none',
           }}
-        />
-        <div style={{ padding: '15px' }}>
-          <h2 style={{ fontSize: '1.6rem', margin: '0 0 6px' }}>
-            {currentProfile.name}, {currentProfile.age}
-          </h2>
-          <p style={{ fontSize: '0.95rem', margin: '0 0 12px', opacity: 0.9, lineHeight: '1.35' }}>
-            {currentProfile.about}
-          </p>
+        >
+          <img
+            src={currentProfile.photo}
+            alt={currentProfile.name}
+            style={{
+              width: '100%',
+              height: '60%',
+              objectFit: 'cover',
+            }}
+          />
+          <div style={{ padding: '15px' }}>
+            <h2 style={{ fontSize: '1.7rem', margin: '0 0 6px' }}>
+              {currentProfile.name}, {currentProfile.age}
+            </h2>
+            <p style={{ fontSize: '1rem', margin: '0 0 15px', opacity: 0.9, lineHeight: '1.4' }}>
+              {currentProfile.about}
+            </p>
+          </div>
+        </div>
+
+        {/* Надписи ЛАЙК / НЕТ */}
+        <div style={{
+          position: 'absolute',
+          top: '40%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          fontSize: '3.5rem',
+          fontWeight: 'bold',
+          opacity: Math.min(Math.abs(offsetX) / 150, 1),
+          color: offsetX > 0 ? '#00ff88' : '#ff4757',
+          pointerEvents: 'none',
+          textShadow: '0 0 10px rgba(0,0,0,0.8)',
+        }}>
+          {offsetX > 0 ? 'ЛАЙК' : 'НЕТ'}
         </div>
       </div>
 
       <button
         onClick={() => setScreen('profile')}
         style={{
-          padding: '12px 40px',
-          fontSize: '1.2rem',
+          padding: '14px 50px',
+          fontSize: '1.3rem',
           background: '#00ff88',
           color: '#000',
           border: 'none',
           borderRadius: '50px',
           cursor: 'pointer',
-          boxShadow: '0 4px 15px rgba(0,255,136,0.3)',
+          boxShadow: '0 6px 20px rgba(0,255,136,0.4)',
+          marginBottom: '20px',
         }}
       >
         Редактировать анкету
       </button>
 
       {user && (
-        <p style={{ marginTop: '15px', fontSize: '1.1rem', opacity: 0.8 }}>
+        <p style={{ fontSize: '1.2rem', opacity: 0.8 }}>
           Привет, {user.first_name}!
         </p>
       )}
