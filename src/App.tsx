@@ -39,7 +39,7 @@ function App() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Анимация "свайпа" при нажатии кнопки
+  // Анимация при нажатии кнопки
   const [offsetX, setOffsetX] = useState(0);
   const [rotation, setRotation] = useState(0);
   const [animating, setAnimating] = useState(false);
@@ -168,7 +168,7 @@ function App() {
       setOffsetX(0);
       setRotation(0);
       setAnimating(false);
-    }, 400);
+    }, 400); // время анимации улёта
   };
 
   if (screen === 'loading') {
@@ -461,14 +461,14 @@ function App() {
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        gap: '60px',
+        gap: '80px',
         marginBottom: '40px',
       }}>
         <button
           onClick={() => animateSwipe('left')}
           style={{
             padding: '20px 40px',
-            fontSize: '2rem',
+            fontSize: '2.2rem',
             background: '#ff4757',
             color: 'white',
             border: 'none',
@@ -484,7 +484,7 @@ function App() {
           onClick={() => animateSwipe('right')}
           style={{
             padding: '20px 40px',
-            fontSize: '2rem',
+            fontSize: '2.2rem',
             background: '#00ff88',
             color: 'white',
             border: 'none',
@@ -498,7 +498,7 @@ function App() {
       </div>
 
       {user && (
-        <p style={{ fontSize: '1.2rem', opacity: 0.8, marginBottom: '20px' }}>
+        <p style={{ fontSize: '1.2rem', opacity: 0.8 }}>
           Привет, {user.first_name}!
         </p>
       )}
