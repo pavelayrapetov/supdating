@@ -178,9 +178,14 @@ function App() {
     const currentX = e.touches[0].clientX;
     const diffX = currentX - startX.current;
 
-    setOffsetX(diffX);
-    setRotation(diffX * 0.08);
+    // Только горизонтальное движение — вертикальное блокируем
+    if (Math.abs(diffX) > Math.abs(e.touches[0].clientY - e.touches[0].clientY)) {
+      setOffsetX(diffX);
+      setRotation(diffX * 0.08);
+    }
+
     e.preventDefault();
+    e.stopPropagation();
   };
 
   const handleTouchEnd = () => {
@@ -376,7 +381,7 @@ function App() {
     );
   }
 
-  // Поиск с анимацией свайпа
+  // Поиск
   const currentProfile = mockProfiles[currentIndex];
 
   return (
@@ -391,6 +396,7 @@ function App() {
         flexDirection: 'column',
         alignItems: 'center',
         touchAction: 'none',
+        overscrollBehaviorY: 'none',
       }}
     >
       <h1 style={{ fontSize: '2.4rem', margin: '15px 0 10px' }}>Поиск пары</h1>
@@ -412,7 +418,7 @@ function App() {
           maxWidth: '360px',
           height: '480px',
           marginTop: 'auto',
-          marginBottom: '80px',
+          marginBottom: '100px', // место для кнопки
         }}
       >
         <div
