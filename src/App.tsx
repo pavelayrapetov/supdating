@@ -37,8 +37,12 @@ function App() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
+  // Для анимированного свайпа
+  const [offsetX, setOffsetX] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const startX = useRef(0);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const mockProfiles: CardProfile[] = [
     {
@@ -142,31 +146,43 @@ function App() {
 
   const nextCard = () => {
     setCurrentIndex((prev) => prev + 1);
+    setOffsetX(0);
+    setRotation(0);
   };
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
+    if (e.touches.length !== 1) return;
+    startX.current = e.touches[0].clientX;
+    setIsDragging(true);
     e.preventDefault();
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchEndX.current = e.touches[0].clientX;
+    if (!isDragging || e.touches.length !== 1) return;
+
+    const currentX = e.touches[0].clientX;
+    const diffX = currentX - startX.current;
+
+    setOffsetX(diffX);
+    // Поворот карточки в зависимости от сдвига (максимум ±15 градусов)
+    setRotation(diffX * 0.08);
     e.preventDefault();
   };
 
   const handleTouchEnd = () => {
-    const diff = touchStartX.current - touchEndX.current;
+    if (!isDragging) return;
+    setIsDragging(false);
 
-    if (Math.abs(diff) > 80) {
-      if (diff > 0) {
-        nextCard(); // влево
-      } else {
-        nextCard(); // вправо
-      }
+    const threshold = 120; // минимальное расстояние для пролистывания
+
+    if (Math.abs(offsetX) > threshold) {
+      // Пролистываем
+      nextCard();
+    } else {
+      // Возвращаем карточку в центр с анимацией
+      setOffsetX(0);
+      setRotation(0);
     }
-
-    touchStartX.current = 0;
-    touchEndX.current = 0;
   };
 
   if (screen === 'loading') {
@@ -273,7 +289,7 @@ function App() {
           onClick={handleSaveProfile}
           style={{
             marginTop: '35px',
-            padding: '18px 80px',
+            padding: '18px 70px',
             fontSize: '1.5rem',
             fontWeight: 'bold',
             background: 'linear-gradient(90deg, #ff6b6b, #ff8e53)',
@@ -310,6 +326,7 @@ function App() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        touchAction: 'none',
       }}
     >
       <h1 style={{ fontSize: '2.4rem', margin: '15px 0 10px' }}>Поиск пары</h1>
@@ -325,38 +342,66 @@ function App() {
       </p>
 
       <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
         style={{
+          position: 'relative',
           width: '90%',
           maxWidth: '360px',
           height: '480px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '20px',
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
-          backdropFilter: 'blur(10px)',
-          touchAction: 'pan-y pinch-zoom',
           marginTop: 'auto',
         }}
       >
-        <img
-          src={currentProfile.photo}
-          alt={currentProfile.name}
+        <div
+          ref={cardRef}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           style={{
             width: '100%',
-            height: '60%',
-            objectFit: 'cover',
+            height: '100%',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+            backdropFilter: 'blur(10px)',
+            transform: `translateX(${offsetX}px) rotate(${rotation}deg)`,
+            transition: isDragging ? 'none' : 'transform 0.5s ease-out',
+            touchAction: 'none',
+            userSelect: 'none',
           }}
-        />
-        <div style={{ padding: '15px' }}>
-          <h2 style={{ fontSize: '1.7rem', margin: '0 0 6px' }}>
-            {currentProfile.name}, {currentProfile.age}
-          </h2>
-          <p style={{ fontSize: '1rem', margin: '0 0 15px', opacity: 0.9, lineHeight: '1.4' }}>
-            {currentProfile.about}
-          </p>
+        >
+          <img
+            src={currentProfile.photo}
+            alt={currentProfile.name}
+            style={{
+              width: '100%',
+              height: '60%',
+              objectFit: 'cover',
+            }}
+          />
+          <div style={{ padding: '15px' }}>
+            <h2 style={{ fontSize: '1.7rem', margin: '0 0 6px' }}>
+              {currentProfile.name}, {currentProfile.age}
+            </h2>
+            <p style={{ fontSize: '1rem', margin: '0 0 15px', opacity: 0.9, lineHeight: '1.4' }}>
+              {currentProfile.about}
+            </p>
+          </div>
+        </div>
+
+        {/* Надписи Лайк / Нет, появляются при свайпе */}
+        <div style={{
+          position: 'absolute',
+          top: '40%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          fontSize: '3rem',
+          fontWeight: 'bold',
+          opacity: Math.abs(offsetX) / 200,
+          color: offsetX > 0 ? '#00ff88' : '#ff4757',
+          pointerEvents: 'none',
+          textShadow: '0 0 10px rgba(0,0,0,0.8)',
+        }}>
+          {offsetX > 0 ? 'ЛАЙК' : 'НЕТ'}
         </div>
       </div>
 
