@@ -39,11 +39,10 @@ function App() {
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Анимация свайпа
+  // Анимация "свайпа" при нажатии кнопки
   const [offsetX, setOffsetX] = useState(0);
   const [rotation, setRotation] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const startX = useRef(0);
+  const [animating, setAnimating] = useState(false);
 
   const mockProfiles: CardProfile[] = [
     {
@@ -159,47 +158,17 @@ function App() {
     }
   };
 
-  const nextCard = () => {
-    setCurrentIndex((prev) => prev + 1);
-    setOffsetX(0);
-    setRotation(0);
-  };
+  const animateSwipe = (direction: 'left' | 'right') => {
+    setAnimating(true);
+    setOffsetX(direction === 'right' ? 400 : -400);
+    setRotation(direction === 'right' ? 15 : -15);
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (e.touches.length !== 1) return;
-    startX.current = e.touches[0].clientX;
-    setIsDragging(true);
-    e.preventDefault();
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging || e.touches.length !== 1) return;
-
-    const currentX = e.touches[0].clientX;
-    const diffX = currentX - startX.current;
-
-    // Только горизонтальное движение — вертикальное блокируем
-    if (Math.abs(diffX) > Math.abs(e.touches[0].clientY - e.touches[0].clientY)) {
-      setOffsetX(diffX);
-      setRotation(diffX * 0.08);
-    }
-
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleTouchEnd = () => {
-    if (!isDragging) return;
-    setIsDragging(false);
-
-    const threshold = 120;
-
-    if (Math.abs(offsetX) > threshold) {
-      nextCard();
-    } else {
+    setTimeout(() => {
+      setCurrentIndex((prev) => prev + 1);
       setOffsetX(0);
       setRotation(0);
-    }
+      setAnimating(false);
+    }, 400); // время анимации улёта
   };
 
   if (screen === 'loading') {
@@ -240,7 +209,6 @@ function App() {
           marginBottom: '30px',
           textAlign: 'center',
           fontWeight: '700',
-          letterSpacing: '-0.5px',
         }}>
           Создай анкету
         </h1>
@@ -261,7 +229,6 @@ function App() {
             background: 'rgba(255,255,255,0.08)',
             color: 'white',
             outline: 'none',
-            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
           }}
         />
 
@@ -280,7 +247,6 @@ function App() {
             color: gender ? 'white' : '#aaa',
             outline: 'none',
             appearance: 'none',
-            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
           }}
         >
           <option value="" disabled style={{ color: '#aaa' }}>
@@ -307,7 +273,6 @@ function App() {
             color: 'white',
             outline: 'none',
             resize: 'none',
-            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
           }}
         />
 
@@ -381,7 +346,7 @@ function App() {
     );
   }
 
-  // Поиск
+  // Поиск с кнопками и анимацией
   const currentProfile = mockProfiles[currentIndex];
 
   return (
@@ -399,16 +364,38 @@ function App() {
         overscrollBehaviorY: 'none',
       }}
     >
-      <h1 style={{ fontSize: '2.4rem', margin: '15px 0 10px' }}>Поиск пары</h1>
+      <div style={{
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'space-between',
+        padding: '15px 20px',
+        boxSizing: 'border-box',
+      }}>
+        <h1 style={{ fontSize: '2.2rem', margin: 0 }}>Поиск пары</h1>
+
+        <button
+          onClick={() => setScreen('profile')}
+          style={{
+            background: 'none',
+            border: 'none',
+            fontSize: '2rem',
+            color: 'white',
+            cursor: 'pointer',
+            padding: '0 10px',
+          }}
+        >
+          ⚙️
+        </button>
+      </div>
 
       <p style={{
-        fontSize: '1.2rem',
-        marginBottom: '15px',
-        opacity: 0.9,
+        fontSize: '1.1rem',
+        margin: '5px 0 15px',
+        opacity: 0.8,
         textAlign: 'center',
         padding: '0 20px',
       }}>
-        Проводи пальцем по карточке вправо — лайк, влево — дизлайк 🔥
+        Нажимай «Нравится» или «Не нравится»
       </p>
 
       <div
@@ -418,13 +405,10 @@ function App() {
           maxWidth: '360px',
           height: '480px',
           marginTop: 'auto',
-          marginBottom: '100px', // место для кнопки
+          marginBottom: '120px',
         }}
       >
         <div
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
           style={{
             width: '100%',
             height: '100%',
@@ -434,9 +418,8 @@ function App() {
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
             backdropFilter: 'blur(10px)',
             transform: `translateX(${offsetX}px) rotate(${rotation}deg)`,
-            transition: isDragging ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            transition: animating ? 'transform 0.5s ease-out' : 'none',
             touchAction: 'none',
-            userSelect: 'none',
           }}
         >
           <img
@@ -458,6 +441,7 @@ function App() {
           </div>
         </div>
 
+        {/* Надпись ЛАЙК / НЕТ во время анимации */}
         <div style={{
           position: 'absolute',
           top: '40%',
@@ -465,34 +449,57 @@ function App() {
           transform: 'translate(-50%, -50%)',
           fontSize: '3.5rem',
           fontWeight: 'bold',
-          opacity: Math.min(Math.abs(offsetX) / 150, 1),
+          opacity: animating ? 1 : 0,
           color: offsetX > 0 ? '#00ff88' : '#ff4757',
           pointerEvents: 'none',
           textShadow: '0 0 12px rgba(0,0,0,0.8)',
+          transition: 'opacity 0.3s',
         }}>
           {offsetX > 0 ? 'ЛАЙК' : 'НЕТ'}
         </div>
       </div>
 
-      <button
-        onClick={() => setScreen('profile')}
-        style={{
-          padding: '14px 50px',
-          fontSize: '1.3rem',
-          background: '#00ff88',
-          color: '#000',
-          border: 'none',
-          borderRadius: '50px',
-          cursor: 'pointer',
-          boxShadow: '0 6px 20px rgba(0,255,136,0.4)',
-          marginBottom: '40px',
-        }}
-      >
-        Редактировать анкету
-      </button>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        gap: '60px',
+        marginBottom: '40px',
+      }}>
+        <button
+          onClick={() => animateSwipe('left')}
+          style={{
+            padding: '20px 40px',
+            fontSize: '2rem',
+            background: '#ff4757',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            boxShadow: '0 8px 25px rgba(255,71,87,0.5)',
+          }}
+        >
+          👎
+        </button>
+
+        <button
+          onClick={() => animateSwipe('right')}
+          style={{
+            padding: '20px 40px',
+            fontSize: '2rem',
+            background: '#00ff88',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            boxShadow: '0 8px 25px rgba(0,255,136,0.5)',
+          }}
+        >
+          ❤️
+        </button>
+      </div>
 
       {user && (
-        <p style={{ fontSize: '1.2rem', opacity: 0.8 }}>
+        <p style={{ fontSize: '1.2rem', opacity: 0.8, marginBottom: '20px' }}>
           Привет, {user.first_name}!
         </p>
       )}
