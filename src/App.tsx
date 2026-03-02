@@ -146,10 +146,12 @@ function App() {
 
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
     touchStartX.current = e.touches[0].clientX;
+    e.preventDefault();
   };
 
   const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
     touchEndX.current = e.touches[0].clientX;
+    e.preventDefault();
   };
 
   const handleTouchEnd = () => {
@@ -157,11 +159,9 @@ function App() {
 
     if (Math.abs(diff) > 80) {
       if (diff > 0) {
-        console.log('Свайп влево');
-        nextCard();
+        nextCard(); // влево
       } else {
-        console.log('Свайп вправо');
-        nextCard();
+        nextCard(); // вправо
       }
     }
 
@@ -171,17 +171,17 @@ function App() {
 
   if (screen === 'loading') {
     return (
-      <div
-        style={{
-          height: '100vh',
-          background: '#0f0f1a',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '1.5rem',
-        }}
-      >
+      <div style={{
+        height: '100vh',
+        width: '100vw',
+        overflow: 'hidden',
+        background: '#0f0f1a',
+        color: 'white',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: '1.5rem',
+      }}>
         Загрузка...
       </div>
     );
@@ -189,19 +189,25 @@ function App() {
 
   if (screen === 'profile') {
     return (
-      <div
-        style={{
-          height: '100vh',
-          padding: '40px 20px',
-          background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
-          color: 'white',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          overflowY: 'auto', // скролл внутри формы, если много текста
-        }}
-      >
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '25px' }}>
+      <div style={{
+        height: '100vh',
+        width: '100vw',
+        overflow: 'hidden',
+        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+        color: 'white',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+        boxSizing: 'border-box',
+      }}>
+        <h1 style={{
+          fontSize: '2.6rem',
+          marginBottom: '30px',
+          textAlign: 'center',
+          fontWeight: 'bold',
+        }}>
           {profile ? 'Редактировать анкету' : 'Создай анкету'}
         </h1>
 
@@ -211,13 +217,15 @@ function App() {
           value={age}
           onChange={(e) => setAge(e.target.value)}
           style={{
-            padding: '14px',
-            margin: '8px',
-            width: '85%',
+            padding: '18px',
+            margin: '12px 0',
+            width: '88%',
             maxWidth: '380px',
-            borderRadius: '12px',
+            borderRadius: '16px',
             border: 'none',
-            fontSize: '1.1rem',
+            fontSize: '1.3rem',
+            background: 'rgba(255,255,255,0.18)',
+            color: 'white',
           }}
         />
 
@@ -225,13 +233,15 @@ function App() {
           value={gender}
           onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other' | '')}
           style={{
-            padding: '14px',
-            margin: '8px',
-            width: '85%',
+            padding: '18px',
+            margin: '12px 0',
+            width: '88%',
             maxWidth: '380px',
-            borderRadius: '12px',
+            borderRadius: '16px',
             border: 'none',
-            fontSize: '1.1rem',
+            fontSize: '1.3rem',
+            background: 'rgba(255,255,255,0.18)',
+            color: 'white',
           }}
         >
           <option value="">Выберите пол</option>
@@ -245,38 +255,40 @@ function App() {
           value={about}
           onChange={(e) => setAbout(e.target.value)}
           style={{
-            padding: '14px',
-            margin: '8px',
-            width: '85%',
+            padding: '18px',
+            margin: '12px 0',
+            width: '88%',
             maxWidth: '380px',
-            height: '120px',
-            borderRadius: '12px',
+            height: '130px',
+            borderRadius: '16px',
             border: 'none',
-            fontSize: '1.1rem',
-            resize: 'vertical',
+            fontSize: '1.3rem',
+            background: 'rgba(255,255,255,0.18)',
+            color: 'white',
+            resize: 'none',
           }}
         />
 
         <button
           onClick={handleSaveProfile}
           style={{
-            marginTop: '25px',
-            padding: '16px 50px',
-            fontSize: '1.4rem',
+            marginTop: '35px',
+            padding: '18px 80px',
+            fontSize: '1.5rem',
             fontWeight: 'bold',
             background: 'linear-gradient(90deg, #ff6b6b, #ff8e53)',
             color: 'white',
             border: 'none',
-            borderRadius: '50px',
+            borderRadius: '60px',
             cursor: 'pointer',
-            boxShadow: '0 6px 20px rgba(255,107,107,0.4)',
+            boxShadow: '0 8px 25px rgba(255,107,107,0.5)',
           }}
         >
           Сохранить
         </button>
 
         {user && (
-          <p style={{ marginTop: '20px', fontSize: '1.2rem' }}>
+          <p style={{ marginTop: '30px', fontSize: '1.4rem' }}>
             Привет, {user.first_name}!
           </p>
         )}
@@ -292,7 +304,7 @@ function App() {
       style={{
         height: '100vh',
         width: '100vw',
-        overflow: 'hidden', // убираем общий скролл страницы
+        overflow: 'hidden',
         background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
         color: 'white',
         display: 'flex',
@@ -302,8 +314,14 @@ function App() {
     >
       <h1 style={{ fontSize: '2.4rem', margin: '15px 0 10px' }}>Поиск пары</h1>
 
-      <p style={{ fontSize: '1.2rem', marginBottom: '15px', opacity: 0.9, textAlign: 'center', padding: '0 20px' }}>
-        Проводи пальцем вправо — лайк, влево — дизлайк 🔥
+      <p style={{
+        fontSize: '1.2rem',
+        marginBottom: '15px',
+        opacity: 0.9,
+        textAlign: 'center',
+        padding: '0 20px',
+      }}>
+        Проводи пальцем по карточке вправо — лайк, влево — дизлайк 🔥
       </p>
 
       <div
@@ -319,7 +337,7 @@ function App() {
           overflow: 'hidden',
           boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
           backdropFilter: 'blur(10px)',
-          touchAction: 'pan-y',
+          touchAction: 'pan-y pinch-zoom',
           marginTop: 'auto',
         }}
       >
