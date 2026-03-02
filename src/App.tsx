@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 interface User {
   id: number;
@@ -168,7 +168,7 @@ function App() {
       setOffsetX(0);
       setRotation(0);
       setAnimating(false);
-    }, 400); // время анимации улёта
+    }, 400);
   };
 
   if (screen === 'loading') {
@@ -405,7 +405,7 @@ function App() {
           maxWidth: '360px',
           height: '480px',
           marginTop: 'auto',
-          marginBottom: '120px',
+          marginBottom: '100px',
         }}
       >
         <div
@@ -441,7 +441,6 @@ function App() {
           </div>
         </div>
 
-        {/* Надпись ЛАЙК / НЕТ во время анимации */}
         <div style={{
           position: 'absolute',
           top: '40%',
