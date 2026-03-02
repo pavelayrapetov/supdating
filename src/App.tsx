@@ -14,7 +14,7 @@ interface Profile {
   age: number;
   gender: 'male' | 'female';
   about: string;
-  photo?: string; // base64
+  photo?: string;
   createdAt: string;
 }
 
@@ -376,7 +376,7 @@ function App() {
     );
   }
 
-  // Поиск
+  // Поиск с анимацией свайпа
   const currentProfile = mockProfiles[currentIndex];
 
   return (
@@ -390,6 +390,7 @@ function App() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+        touchAction: 'none',
       }}
     >
       <h1 style={{ fontSize: '2.4rem', margin: '15px 0 10px' }}>Поиск пары</h1>
@@ -409,7 +410,7 @@ function App() {
           position: 'relative',
           width: '90%',
           maxWidth: '360px',
-          height: '460px',
+          height: '480px',
           marginTop: 'auto',
           marginBottom: '80px',
         }}
@@ -478,7 +479,7 @@ function App() {
           borderRadius: '50px',
           cursor: 'pointer',
           boxShadow: '0 6px 20px rgba(0,255,136,0.4)',
-          marginBottom: '30px',
+          marginBottom: '40px',
         }}
       >
         Редактировать анкету
