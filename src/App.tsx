@@ -12,9 +12,9 @@ interface User {
 
 interface Profile {
   age: number;
-  gender: 'male' | 'female' | 'other';
+  gender: 'male' | 'female';
   about: string;
-  photo?: string;           // base64 фото
+  photo?: string; // base64
   createdAt: string;
 }
 
@@ -33,7 +33,7 @@ function App() {
   const [screen, setScreen] = useState<'loading' | 'profile' | 'search'>('loading');
 
   const [age, setAge] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | 'other' | ''>('');
+  const [gender, setGender] = useState<'male' | 'female' | ''>('');
   const [about, setAbout] = useState('');
   const [profilePhoto, setProfilePhoto] = useState<string>('');
 
@@ -179,7 +179,7 @@ function App() {
     const diffX = currentX - startX.current;
 
     setOffsetX(diffX);
-    setRotation(diffX * 0.08); // поворот до ±15 градусов
+    setRotation(diffX * 0.08);
     e.preventDefault();
   };
 
@@ -192,7 +192,6 @@ function App() {
     if (Math.abs(offsetX) > threshold) {
       nextCard();
     } else {
-      // Возврат в центр
       setOffsetX(0);
       setRotation(0);
     }
@@ -222,22 +221,23 @@ function App() {
         height: '100vh',
         width: '100vw',
         overflow: 'hidden',
-        background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+        background: 'linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%)',
         color: 'white',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '20px',
+        padding: '20px 24px',
         boxSizing: 'border-box',
       }}>
         <h1 style={{
-          fontSize: '2.6rem',
+          fontSize: '2.4rem',
           marginBottom: '30px',
           textAlign: 'center',
-          fontWeight: 'bold',
+          fontWeight: '700',
+          letterSpacing: '-0.5px',
         }}>
-          {profile ? 'Редактировать анкету' : 'Создай анкету'}
+          Создай анкету
         </h1>
 
         <input
@@ -246,37 +246,43 @@ function App() {
           value={age}
           onChange={(e) => setAge(e.target.value)}
           style={{
-            padding: '18px',
-            margin: '12px 0',
-            width: '88%',
-            maxWidth: '380px',
+            padding: '16px 20px',
+            margin: '10px 0',
+            width: '100%',
+            maxWidth: '360px',
             borderRadius: '16px',
             border: 'none',
             fontSize: '1.3rem',
-            background: 'rgba(255,255,255,0.18)',
+            background: 'rgba(255,255,255,0.08)',
             color: 'white',
+            outline: 'none',
+            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
           }}
         />
 
         <select
           value={gender}
-          onChange={(e) => setGender(e.target.value as 'male' | 'female' | 'other' | '')}
+          onChange={(e) => setGender(e.target.value as 'male' | 'female' | '')}
           style={{
-            padding: '18px',
-            margin: '12px 0',
-            width: '88%',
-            maxWidth: '380px',
+            padding: '16px 20px',
+            margin: '10px 0',
+            width: '100%',
+            maxWidth: '360px',
             borderRadius: '16px',
             border: 'none',
             fontSize: '1.3rem',
-            background: 'rgba(255,255,255,0.18)',
-            color: 'white',
+            background: 'rgba(255,255,255,0.08)',
+            color: gender ? 'white' : '#aaa',
+            outline: 'none',
+            appearance: 'none',
+            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
           }}
         >
-          <option value="">Выберите пол</option>
+          <option value="" disabled style={{ color: '#aaa' }}>
+            Пол
+          </option>
           <option value="male">Мужчина</option>
           <option value="female">Женщина</option>
-          <option value="other">Другое</option>
         </select>
 
         <textarea
@@ -284,58 +290,70 @@ function App() {
           value={about}
           onChange={(e) => setAbout(e.target.value)}
           style={{
-            padding: '18px',
-            margin: '12px 0',
-            width: '88%',
-            maxWidth: '380px',
-            height: '130px',
+            padding: '16px 20px',
+            margin: '10px 0',
+            width: '100%',
+            maxWidth: '360px',
+            height: '120px',
             borderRadius: '16px',
             border: 'none',
             fontSize: '1.3rem',
-            background: 'rgba(255,255,255,0.18)',
+            background: 'rgba(255,255,255,0.08)',
             color: 'white',
+            outline: 'none',
             resize: 'none',
+            boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)',
           }}
         />
 
-        {/* Поле для загрузки фото */}
-        <div style={{ margin: '15px 0', width: '88%', maxWidth: '380px' }}>
+        <div style={{ width: '100%', maxWidth: '360px', margin: '15px 0' }}>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '1.2rem' }}>
             Фото профиля
           </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handlePhotoChange}
-            style={{
-              width: '100%',
-              padding: '12px',
-              background: 'rgba(255,255,255,0.18)',
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '12px',
+            background: 'rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+          }}>
+            <label style={{
+              padding: '12px 20px',
+              background: 'rgba(255,255,255,0.12)',
               borderRadius: '12px',
-              color: 'white',
-              border: 'none',
-            }}
-          />
-          {profilePhoto && (
-            <img
-              src={profilePhoto}
-              alt="Предпросмотр"
-              style={{
-                marginTop: '12px',
-                width: '100%',
-                maxHeight: '180px',
-                objectFit: 'cover',
-                borderRadius: '12px',
-              }}
-            />
-          )}
+              cursor: 'pointer',
+              fontSize: '1.1rem',
+            }}>
+              Выбрать фото
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+                style={{ display: 'none' }}
+              />
+            </label>
+            {profilePhoto && (
+              <img
+                src={profilePhoto}
+                alt="Предпросмотр"
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  objectFit: 'cover',
+                  borderRadius: '12px',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                }}
+              />
+            )}
+          </div>
         </div>
 
         <button
           onClick={handleSaveProfile}
           style={{
-            marginTop: '25px',
-            padding: '18px 80px',
+            marginTop: '30px',
+            padding: '18px 90px',
             fontSize: '1.5rem',
             fontWeight: 'bold',
             background: 'linear-gradient(90deg, #ff6b6b, #ff8e53)',
@@ -343,14 +361,14 @@ function App() {
             border: 'none',
             borderRadius: '60px',
             cursor: 'pointer',
-            boxShadow: '0 8px 25px rgba(255,107,107,0.5)',
+            boxShadow: '0 10px 30px rgba(255,107,107,0.5)',
           }}
         >
           Сохранить
         </button>
 
         {user && (
-          <p style={{ marginTop: '25px', fontSize: '1.4rem' }}>
+          <p style={{ marginTop: '25px', fontSize: '1.3rem' }}>
             Привет, {user.first_name}!
           </p>
         )}
@@ -358,7 +376,7 @@ function App() {
     );
   }
 
-  // Поиск с анимацией свайпа
+  // Поиск
   const currentProfile = mockProfiles[currentIndex];
 
   return (
@@ -391,9 +409,9 @@ function App() {
           position: 'relative',
           width: '90%',
           maxWidth: '360px',
-          height: '480px',
+          height: '460px',
           marginTop: 'auto',
-          marginBottom: '60px', // место для кнопки
+          marginBottom: '80px',
         }}
       >
         <div
@@ -409,7 +427,7 @@ function App() {
             boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
             backdropFilter: 'blur(10px)',
             transform: `translateX(${offsetX}px) rotate(${rotation}deg)`,
-            transition: isDragging ? 'none' : 'transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+            transition: isDragging ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
             touchAction: 'none',
             userSelect: 'none',
           }}
@@ -419,7 +437,7 @@ function App() {
             alt={currentProfile.name}
             style={{
               width: '100%',
-              height: '60%',
+              height: '62%',
               objectFit: 'cover',
             }}
           />
@@ -433,7 +451,6 @@ function App() {
           </div>
         </div>
 
-        {/* Надписи ЛАЙК / НЕТ */}
         <div style={{
           position: 'absolute',
           top: '40%',
@@ -444,7 +461,7 @@ function App() {
           opacity: Math.min(Math.abs(offsetX) / 150, 1),
           color: offsetX > 0 ? '#00ff88' : '#ff4757',
           pointerEvents: 'none',
-          textShadow: '0 0 10px rgba(0,0,0,0.8)',
+          textShadow: '0 0 12px rgba(0,0,0,0.8)',
         }}>
           {offsetX > 0 ? 'ЛАЙК' : 'НЕТ'}
         </div>
@@ -461,7 +478,7 @@ function App() {
           borderRadius: '50px',
           cursor: 'pointer',
           boxShadow: '0 6px 20px rgba(0,255,136,0.4)',
-          marginBottom: '20px',
+          marginBottom: '30px',
         }}
       >
         Редактировать анкету
